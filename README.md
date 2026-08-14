@@ -1,14 +1,12 @@
-<p align="center">
-  <h1 align="center">🤖 Deep Search Pro</h1>
-  <p align="center"><b>一个轻量的多智能体协作系统 —— Agent 开发入门实战项目</b></p>
-  <p align="center">
-    <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" alt="Python">
-    <img src="https://img.shields.io/badge/FastAPI-0.129.2-green.svg" alt="FastAPI">
-    <img src="https://img.shields.io/badge/LangChain-1.2.10-orange.svg" alt="LangChain">
-    <img src="https://img.shields.io/badge/deepagents-0.4.3-purple.svg" alt="deepagents">
-    <img src="https://img.shields.io/badge/适合-学习练手-brightgreen.svg" alt="learning">
-  </p>
-</p>
+
+
+# 🤖 Deep Search Pro
+
+**一个轻量的多智能体协作系统 —— Agent 开发入门实战项目**
+
+
+
+
 
 ---
 
@@ -25,21 +23,27 @@
 
 ---
 
+
+
 ## 🧠 你能从这个项目中学到什么
 
-| 知识点 | 具体体现在项目哪里 |
-|--------|------------------|
-| **Orchestrator 多智能体模式** | `agent/main_agent.py` — 主智能体如何调度 3 个子智能体 |
+
+| 知识点                       | 具体体现在项目哪里                                            |
+| ------------------------- | ---------------------------------------------------- |
+| **Orchestrator 多智能体模式**   | `agent/main_agent.py` — 主智能体如何调度 3 个子智能体             |
 | **Prompt Engineering 实战** | `prompt/prompts.yml` — 如何用 system_prompt 约束 Agent 行为 |
-| **LangChain @tool 自定义工具** | `tools/` 目录 — 6 个工具函数的完整写法 |
-| **FastAPI 异步 + 后台任务** | `api/server.py` — `asyncio.create_task` 非阻塞执行 |
-| **WebSocket 实时推送** | `api/monitor.py` — 工具调用进度实时推送到前端 |
-| **ContextVar 协程级数据隔离** | `api/context.py` — 多用户并发时不串台 |
-| **Agent 文件操作安全** | `utils/path_utils.py` — 12 种路径场景的防护 |
-| **RAG 知识库对接** | `tools/ragflow_tools.py` — RAGFlow SDK 实战 |
-| **数据库自然语言查询** | `tools/db_tools.py` — Agent 自动写 SQL 并执行 |
+| **LangChain @tool 自定义工具** | `tools/` 目录 — 6 个工具函数的完整写法                           |
+| **FastAPI 异步 + 后台任务**     | `api/server.py` — `asyncio.create_task` 非阻塞执行        |
+| **WebSocket 实时推送**        | `api/monitor.py` — 工具调用进度实时推送到前端                     |
+| **ContextVar 协程级数据隔离**    | `api/context.py` — 多用户并发时不串台                         |
+| **Agent 文件操作安全**          | `utils/path_utils.py` — 12 种路径场景的防护                  |
+| **RAG 知识库对接**             | `tools/ragflow_tools.py` — RAGFlow SDK 实战            |
+| **数据库自然语言查询**             | `tools/db_tools.py` — Agent 自动写 SQL 并执行              |
+
 
 ---
+
+
 
 ## 🏗️ 架构一览
 
@@ -67,6 +71,8 @@ api/monitor.py         ← 埋点监控 + 事件循环归属判断
 前端收到实时进度："正在搜索网络..." → "正在查数据库..." → "正在生成文档..."
 ```
 
+
+
 ### 数据流说明
 
 1. 用户通过 `POST /api/task` 发一个自然语言请求
@@ -77,7 +83,11 @@ api/monitor.py         ← 埋点监控 + 事件循环归属判断
 
 ---
 
+
+
 ## 🚀 5 分钟跑起来
+
+
 
 ### 环境要求
 
@@ -87,6 +97,8 @@ api/monitor.py         ← 埋点监控 + 事件循环归属判断
 
 > 📌 数据库和 RAGFlow 是**可选的**，不配也能跑 —— 主智能体会自动跳过没有的服务。
 
+
+
 ### 第一步：克隆 + 装依赖
 
 ```bash
@@ -94,6 +106,8 @@ git clone https://github.com/你的用户名/deep-search-pro.git
 cd deep-search-pro
 pip install -r requirements.txt
 ```
+
+
 
 ### 第二步：配环境变量
 
@@ -117,6 +131,8 @@ TAVILY_API_KEY=tvly-xxxxxxxxxxxxxxxx
 # MYSQL_USER=...
 ```
 
+
+
 ### 第三步：启动
 
 ```bash
@@ -128,32 +144,36 @@ python api/server.py
 ### 第四步：试一试
 
 ```bash
-curl -X POST http://localhost:8000/api/task \
-  -H "Content-Type: application/json" \
-  -d '{"query": "搜索一下最近AI Agent领域的最新进展"}'
+curl -X POST http://localhost:8000/api/task  -H "Content-Type: application/json"  -d '{"query": "搜索一下最近AI Agent领域的最新进展"}'
 ```
 
 同时在浏览器打开 WebSocket `ws://localhost:8000/ws/{返回的thread_id}`，就能看到实时推送的进度消息。
 
 ---
 
+
+
 ## 📖 推荐阅读顺序
 
 如果你是第一次接触 AI Agent 项目，建议按这个顺序读代码：
 
-| 顺序 | 文件 | 重点看什么 |
-|------|------|-----------|
-| 1️⃣ | `agent/llm.py` | 只有 10 行，看 LLM 怎么初始化的 |
-| 2️⃣ | `prompt/prompts.yml` | 看系统提示词怎么写，怎么约束 Agent 行为 |
-| 3️⃣ | `agent/subagents/network_search_agent.py` | 最简单的子智能体，理解"子智能体 = 字典配置" |
-| 4️⃣ | `tools/tavily_tool.py` | 一个完整的 @tool 怎么写，埋点怎么做 |
-| 5️⃣ | `agent/main_agent.py` | **核心**：主智能体怎么创建、怎么 orchestrate、怎么流式执行 |
-| 6️⃣ | `api/server.py` | FastAPI 怎么和 Agent 结合，异步任务怎么触发 |
-| 7️⃣ | `api/monitor.py` | WebSocket 实时推送，事件循环归属判断 |
-| 8️⃣ | `api/context.py` | ContextVar 为什么比全局变量好 |
-| 9️⃣ | `utils/path_utils.py` | Agent 文件安全——边界场景大全 |
+
+| 顺序  | 文件                                        | 重点看什么                                 |
+| --- | ----------------------------------------- | ------------------------------------- |
+| 1️⃣ | `agent/llm.py`                            | 只有 10 行，看 LLM 怎么初始化的                  |
+| 2️⃣ | `prompt/prompts.yml`                      | 看系统提示词怎么写，怎么约束 Agent 行为               |
+| 3️⃣ | `agent/subagents/network_search_agent.py` | 最简单的子智能体，理解"子智能体 = 字典配置"              |
+| 4️⃣ | `tools/tavily_tool.py`                    | 一个完整的 @tool 怎么写，埋点怎么做                 |
+| 5️⃣ | `agent/main_agent.py`                     | **核心**：主智能体怎么创建、怎么 orchestrate、怎么流式执行 |
+| 6️⃣ | `api/server.py`                           | FastAPI 怎么和 Agent 结合，异步任务怎么触发         |
+| 7️⃣ | `api/monitor.py`                          | WebSocket 实时推送，事件循环归属判断               |
+| 8️⃣ | `api/context.py`                          | ContextVar 为什么比全局变量好                  |
+| 9️⃣ | `utils/path_utils.py`                     | Agent 文件安全——边界场景大全                    |
+
 
 ---
+
+
 
 ## 📁 项目文件速查
 
@@ -194,6 +214,8 @@ deep_search_pro/
 
 ---
 
+
+
 ## 🧪 练手建议：你可以这样改造
 
 项目的设计刻意保持简洁，给你留了很多动手空间。以下是一些建议的改造方向，难度递进：
@@ -204,12 +226,16 @@ deep_search_pro/
 - [ ] **加一个子智能体**：比如"天气查询助手"或"代码执行助手"，体验一下加子智能体要多改几行代码
 - [ ] **改 system_prompt**：把"空调公司"改成你自己的业务场景，看看 Agent 行为怎么变化
 
+
+
 ### 进阶级（工程能力）
 
 - [ ] **把 InMemorySaver 换成 SqliteSaver**：让对话历史持久化，重启不丢失
 - [ ] **加一个简单的 Web 前端**：用聊天界面替代 curl，WebSocket 显示实时进度条
 - [ ] **给子智能体加"反思"机制**：让子智能体执行完后再自我检查一遍，提高准确性
 - [ ] **加 JWT 认证**：给 `/api/task` 加上登录校验
+
+
 
 ### 挑战级（深入学习）
 
@@ -220,21 +246,29 @@ deep_search_pro/
 
 ---
 
+
+
 ## 🔧 技术栈
 
-| 层级 | 技术 | 说明 |
-|------|------|------|
-| Agent 框架 | **deepagents** (LangChain 官方) | 多智能体编排，本项目核心依赖 |
-| LLM 接入 | LangChain + OpenAI 兼容协议 | 一套代码适配多种模型 |
-| Web 框架 | FastAPI + Uvicorn | 异步 HTTP + 原生 WebSocket |
-| 搜索引擎 | Tavily API | AI 专用搜索，提供免费额度 |
-| 知识库 | RAGFlow | 开源的 RAG 引擎，可以本地部署 |
-| 数据库 | MySQL | 关系型数据库，Agent 自动写 SQL |
-| 文档生成 | markdown + pywin32 | MD 生成 + Word COM 转 PDF |
+
+| 层级       | 技术                            | 说明                     |
+| -------- | ----------------------------- | ---------------------- |
+| Agent 框架 | **deepagents** (LangChain 官方) | 多智能体编排，本项目核心依赖         |
+| LLM 接入   | LangChain + OpenAI 兼容协议       | 一套代码适配多种模型             |
+| Web 框架   | FastAPI + Uvicorn             | 异步 HTTP + 原生 WebSocket |
+| 搜索引擎     | Tavily API                    | AI 专用搜索，提供免费额度         |
+| 知识库      | RAGFlow                       | 开源的 RAG 引擎，可以本地部署      |
+| 数据库      | MySQL                         | 关系型数据库，Agent 自动写 SQL   |
+| 文档生成     | markdown + pywin32            | MD 生成 + Word COM 转 PDF |
+
 
 ---
 
+
+
 ## ❓ FAQ
+
+
 
 ### Q: 为什么选 deepagents 而不是自己写编排逻辑？
 
@@ -253,6 +287,8 @@ deep_search_pro/
 **A:** 故意的。这是给学习用的项目，不是给生产用的。每个模块只做一件事，代码量少才容易看懂。如果你能把这 1000 行都读明白，多智能体 Agent 的核心概念就掌握了。
 
 ---
+
+
 
 ## 📄 License
 
