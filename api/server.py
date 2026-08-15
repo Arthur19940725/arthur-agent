@@ -1,9 +1,43 @@
+import io
+import os
+import sys
+
+# Windows 默认把管道/终端当成 GBK，Cursor 按 UTF-8 读，中文会变成乱码。
+# 必须在导入会 print 中文的模块（如 agent.prompts）之前强制 UTF-8。
+os.environ["PYTHONIOENCODING"] = "utf-8"
+os.environ["PYTHONUTF8"] = "1"
+if sys.platform == "win32":
+    try:
+        import ctypes
+        ctypes.windll.kernel32.SetConsoleOutputCP(65001)
+        ctypes.windll.kernel32.SetConsoleCP(65001)
+    except Exception:
+        pass
+for _name in ("stdout", "stderr"):
+    _stream = getattr(sys, _name, None)
+    if _stream is None:
+        continue
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+        if getattr(_stream, "encoding", None) == "utf-8":
+            continue
+    except Exception:
+        pass
+    try:
+        setattr(
+            sys,
+            _name,
+            io.TextIOWrapper(_stream.detach(), encoding="utf-8", errors="replace", line_buffering=True),
+        )
+    except Exception:
+        pass
+
 import uuid
 import asyncio
 import uvicorn
 from pathlib import Path
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
@@ -40,6 +74,11 @@ app.add_middleware(
 class TaskRequest(BaseModel):
     query: str
     thread_id: str = None
+
+@app.get("/")
+async def root():
+    """浏览器打开 http://localhost:8000 时跳转到 Swagger 文档。"""
+    return RedirectResponse(url="/docs")
 
 @app.on_event("startup")
 async def startup_event():
