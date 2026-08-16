@@ -31,7 +31,7 @@ def get_assistant_list():
     # 4. 拼接助手和知识库信息，返回供模型参考（lm知道你哪个助手干啥事，可以调用对应的助手）
     return count_chat_info
 
-# 2. 对某个助手进行提问（创建会话 -》 提问 -》 删除会话）
+# 2. 对某个助手进行提问（创建会话 -> 提问 -> 删除会话）
 def ask_question(chat_name,question):
     """
     向某个助手发起提问： 1. 创建一个会话 2.提问 3.关闭会话！
@@ -40,9 +40,9 @@ def ask_question(chat_name,question):
     :return: 返回提问的结果
     """
     """
-                                                ---> dataset 
-       agent 我们 ----》 session  --》 chat(助手) ---> dataset 
-                                                ---> dataset 
+                                                ---> dataset
+       agent 我们 ----> session  --> chat(助手) ---> dataset
+                                                ---> dataset
     """
     # 1. 创建ragflow客户端
     # 2. 查询对应name的chat
@@ -61,7 +61,7 @@ def ask_question(chat_name,question):
         print(part.content)
         result = part.content
     # 5. 关闭提问的会话
-    # chat -> 关闭 -》  session
+    # chat -> 关闭 ->  session
     use_chat.delete_sessions(ids=[session.id])
     # 6. 返回结果
     return result

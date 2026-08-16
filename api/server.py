@@ -1,5 +1,6 @@
 import io
 import os
+import re
 import sys
 
 # Windows 默认把管道/终端当成 GBK，Cursor 按 UTF-8 读，中文会变成乱码。
@@ -34,25 +35,79 @@ for _name in ("stdout", "stderr"):
 
 import uuid
 import asyncio
+import time
 import uvicorn
+from contextlib import asynccontextmanager
 from pathlib import Path
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List
+from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel, Field
+from typing import Any, List, Literal
 import shutil
 
 # Add project root to sys.path
 current_dir = Path(__file__).resolve().parent
 project_root = current_dir.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
-# Import agent runner and monitor
-# 注意：agent.main_agent 导入时会初始化 main_agent，这可能需要几秒钟
-from agent.main_agent import run_deep_agent
+# Import authentication and monitor services. Agent modules are loaded in lifespan.
+from api.auth import (
+    AuthConfigurationError,
+    AuthSettings,
+    Principal,
+    authenticate_credentials,
+    authentication_error,
+    decode_access_token,
+    get_auth_settings,
+    get_current_user,
+    issue_access_token,
+)
 from api.monitor import manager
+from api.admission import AdmissionError, TaskAdmission
 
-app = FastAPI(title="DeepAgents API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    AuthSettings.from_env()
+    from agent.main_agent import create_main_agent, run_deep_agent
+    from agent.persistence import open_sqlite_checkpointer
+
+    loop = asyncio.get_running_loop()
+    manager.set_loop(loop)
+    app.state.background_tasks = set()
+    app.state.agent_runner = run_deep_agent
+    app.state.thread_locks = {}
+    app.state.thread_owners = {}
+    app.state.consumed_approvals = set()
+    app.state.admission = TaskAdmission.from_env()
+
+    async with open_sqlite_checkpointer() as checkpointer:
+        app.state.main_agent = create_main_agent(checkpointer)
+        print(f"[Server] WebSocket Manager bound to loop: {id(loop)}")
+        try:
+            yield
+        finally:
+            background_tasks = list(app.state.background_tasks)
+            for task in background_tasks:
+                task.cancel()
+            if background_tasks:
+                await asyncio.gather(*background_tasks, return_exceptions=True)
+            manager.event_history.cleanup()
+
+
+app = FastAPI(title="DeepAgents API", lifespan=lifespan)
 
 # 挂载输出目录，以便前端访问生成的静态文件
 # 假设输出目录位于项目根目录下的 output
@@ -63,49 +118,291 @@ output_dir.mkdir(exist_ok=True)
 updated_dir = project_root / "updated"
 updated_dir.mkdir(exist_ok=True)
 
-# 配置 CORS
+# 配置 CORS；默认只允许同源请求，跨域来源需显式配置。
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv("AUTH_CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 class TaskRequest(BaseModel):
     query: str
-    thread_id: str = None
+    thread_id: str | None = None
+
+
+class ApprovalDecision(BaseModel):
+    type: Literal["approve", "reject"]
+    message: str | None = Field(default=None, max_length=500)
+
+
+class ApprovalRequest(BaseModel):
+    approval_id: str
+    decisions: list[ApprovalDecision]
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+
+def _validated_thread_id(raw_thread_id: str | None) -> str:
+    if raw_thread_id is None:
+        return str(uuid.uuid4())
+    raw_thread_id = raw_thread_id.strip()
+    try:
+        return str(uuid.UUID(raw_thread_id))
+    except ValueError:
+        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", raw_thread_id):
+            return raw_thread_id
+        raise HTTPException(status_code=422, detail="invalid thread_id")
+
+
+def _admission():
+    admission = getattr(app.state, "admission", None)
+    if admission is None:
+        admission = app.state.admission = TaskAdmission()
+    return admission
+
+
+def _thread_lock(thread_id: str) -> asyncio.Lock:
+    locks = getattr(app.state, "thread_locks", None)
+    if locks is None:
+        locks = app.state.thread_locks = {}
+    return locks.setdefault(thread_id, asyncio.Lock())
+
+
+def _ensure_thread_owner(thread_id: str, subject: str, *, create: bool = False) -> None:
+    owners = getattr(app.state, "thread_owners", None)
+    if owners is None:
+        owners = app.state.thread_owners = {}
+    owner = owners.get(thread_id)
+    if owner is None and create:
+        owners[thread_id] = subject
+        return
+    if owner != subject:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+
+def _snapshot_approvals(snapshot) -> list[dict[str, Any]]:
+    approvals = []
+    for interrupt_item in getattr(snapshot, "interrupts", ()) or ():
+        value = getattr(interrupt_item, "value", None)
+        approval_id = getattr(interrupt_item, "id", None)
+        if not approval_id or not isinstance(value, dict):
+            continue
+        approvals.append({
+            "approval_id": approval_id,
+            "action_requests": value.get("action_requests", []),
+            "review_configs": value.get("review_configs", []),
+        })
+    return approvals
+
+
+async def _get_pending_approvals(thread_id: str) -> list[dict[str, Any]]:
+    config = {"configurable": {"thread_id": thread_id}}
+    graph = getattr(app.state, "main_agent", None)
+    if graph is None or not hasattr(graph, "aget_state"):
+        return []
+    snapshot = await graph.aget_state(config)
+    return _snapshot_approvals(snapshot)
+
+
+def _schedule_agent_run(thread_id: str, query: str, lease, resume_decisions=None):
+    async def guarded_run():
+        try:
+            async with _thread_lock(thread_id):
+                if resume_decisions is None:
+                    return await app.state.agent_runner(
+                        app.state.main_agent,
+                        query,
+                        thread_id,
+                    )
+                return await app.state.agent_runner(
+                    app.state.main_agent,
+                    query,
+                    thread_id,
+                    resume_decisions=resume_decisions,
+                )
+        finally:
+            lease.release()
+
+    try:
+        task = asyncio.create_task(guarded_run())
+    except Exception:
+        lease.release()
+        raise
+
+    app.state.background_tasks.add(task)
+
+    def _finish(done_task):
+        app.state.background_tasks.discard(done_task)
+        lease.release()
+        if not done_task.cancelled():
+            done_task.exception()
+
+    task.add_done_callback(_finish)
+    return task
+
 
 @app.get("/")
 async def root():
-    """浏览器打开 http://localhost:8000 时跳转到 Swagger 文档。"""
-    return RedirectResponse(url="/docs")
+    """浏览器打开 http://localhost:8000 时进入对话页，可直接看智能体回复。"""
+    return FileResponse(project_root / "static" / "index.html")
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    服务启动时，获取当前运行的事件循环，并绑定到 WebSocket 管理器。
-    确保后台线程能通过 run_coroutine_threadsafe 准确投递消息。
-    """
-    loop = asyncio.get_running_loop()
-    manager.set_loop(loop)
-    print(f"[Server] WebSocket Manager bound to loop: {id(loop)}")
+@app.post("/api/login", response_model=TokenResponse)
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    settings = get_auth_settings()
+    principal = authenticate_credentials(
+        form_data.username,
+        form_data.password,
+        settings,
+    )
+    if principal is None:
+        raise authentication_error("Invalid credentials")
+
+    return TokenResponse(
+        access_token=issue_access_token(principal.subject, settings),
+        expires_in=settings.token_expire_minutes * 60,
+    )
 
 
 @app.post("/api/task")
-async def run_task(request: TaskRequest):
+async def run_task(
+    request: TaskRequest,
+    current_user: Principal = Depends(get_current_user),
+):
     # 1. [ID 初始化]
-    thread_id = request.thread_id or str(uuid.uuid4())
+    thread_id = _validated_thread_id(request.thread_id)
+    query_bytes = len(request.query.encode("utf-8"))
+    max_query_bytes = _admission().settings.max_query_bytes
+    if query_bytes > max_query_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail={
+                "code": "query_too_large",
+                "message": "query exceeds the configured byte limit",
+                "max_bytes": max_query_bytes,
+                "actual_bytes": query_bytes,
+            },
+        )
+    _ensure_thread_owner(thread_id, current_user.subject, create=True)
+    if await _get_pending_approvals(thread_id):
+        raise HTTPException(status_code=409, detail="Task is waiting for approval")
+    try:
+        lease = _admission().acquire(current_user.subject, thread_id)
+    except AdmissionError as exc:
+        detail = {"code": exc.code, "message": exc.message}
+        headers = {}
+        if exc.retry_after is not None:
+            detail["retry_after_seconds"] = exc.retry_after
+            headers["Retry-After"] = str(exc.retry_after)
+        raise HTTPException(status_code=exc.status_code, detail=detail, headers=headers) from exc
+    manager.mark_started(thread_id, request.query)
 
     # 2. [后台执行] 异步运行 Agent，不阻塞主线程
-    # 注意：这里简单的使用 asyncio.create_task 触发，由 main_agent 内部负责实时推送
-    asyncio.create_task(run_deep_agent(request.query, thread_id))
+    try:
+        _schedule_agent_run(thread_id, request.query, lease)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Unable to schedule task") from exc
 
-    # 3. [立即响应]
-    return {"status": "started", "thread_id": thread_id}
+    # 3. [立即响应] 最终回复请查 GET /api/task/{thread_id} 或打开首页对话页
+    return {"status": "started", "thread_id": thread_id, "result_url": f"/api/task/{thread_id}"}
+
+
+@app.get("/api/task/{thread_id}")
+async def get_task(
+    thread_id: str,
+    current_user: Principal = Depends(get_current_user),
+):
+    _ensure_thread_owner(thread_id, current_user.subject)
+    pending = await _get_pending_approvals(thread_id)
+    result = manager.get_task(thread_id)
+    if pending:
+        result["status"] = "waiting_for_approval"
+        result["approval"] = pending[0]
+    return result
+
+
+@app.get("/api/task/{thread_id}/approval")
+async def get_task_approval(
+    thread_id: str,
+    current_user: Principal = Depends(get_current_user),
+):
+    _ensure_thread_owner(thread_id, current_user.subject)
+    pending = await _get_pending_approvals(thread_id)
+    if not pending:
+        raise HTTPException(status_code=404, detail="No pending approval")
+    return pending[0]
+
+
+@app.post("/api/task/{thread_id}/approval")
+async def decide_task_approval(
+    thread_id: str,
+    request: ApprovalRequest,
+    current_user: Principal = Depends(get_current_user),
+):
+    _ensure_thread_owner(thread_id, current_user.subject)
+    async with _thread_lock(thread_id):
+        pending = await _get_pending_approvals(thread_id)
+        approval = next(
+            (item for item in pending if item["approval_id"] == request.approval_id),
+            None,
+        )
+        if approval is None:
+            if request.approval_id in app.state.consumed_approvals:
+                return {"status": "already_processed", "approval_id": request.approval_id}
+            raise HTTPException(status_code=409, detail="Approval is no longer pending")
+
+        if len(request.decisions) != len(approval["action_requests"]):
+            raise HTTPException(status_code=422, detail="Decision count does not match actions")
+        allowed = approval["review_configs"]
+        for decision, review in zip(request.decisions, allowed):
+            if decision.type not in review.get("allowed_decisions", []):
+                raise HTTPException(status_code=422, detail="Decision is not allowed")
+
+        app.state.consumed_approvals.add(request.approval_id)
+        manager._record_event(thread_id, {
+            "type": "monitor_event",
+            "event": "approval_resumed",
+            "message": "审批决定已提交，任务继续执行",
+            "data": {},
+        })
+        try:
+            lease = _admission().acquire(current_user.subject, thread_id)
+            _schedule_agent_run(
+                thread_id,
+                "",
+                lease,
+                resume_decisions=[decision.model_dump() for decision in request.decisions],
+            )
+        except AdmissionError as exc:
+            detail = {"code": exc.code, "message": exc.message}
+            headers = {}
+            if exc.retry_after is not None:
+                detail["retry_after_seconds"] = exc.retry_after
+                headers["Retry-After"] = str(exc.retry_after)
+            raise HTTPException(status_code=exc.status_code, detail=detail, headers=headers) from exc
+        return {
+            "status": "accepted",
+            "approval_id": request.approval_id,
+            "thread_id": thread_id,
+            "task_status": "running",
+        }
 
 
 @app.post("/api/upload")
-async def upload_files(files: List[UploadFile] = File(...), thread_id: str = Form(...)):
+async def upload_files(
+    files: List[UploadFile] = File(...),
+    thread_id: str = Form(...),
+    current_user: Principal = Depends(get_current_user),
+):
     """
     文件上传接口 (File Upload)。
 
@@ -118,37 +415,38 @@ async def upload_files(files: List[UploadFile] = File(...), thread_id: str = For
         files (List[UploadFile]): 文件对象列表。
         thread_id (str): 关联的任务会话 ID。
     """
-    # 1. [目录准备] 确保上传目录存在
+    thread_id = thread_id.strip()
+    try:
+        thread_id = str(uuid.UUID(thread_id))
+    except ValueError as exc:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", thread_id):
+            raise HTTPException(status_code=422, detail="invalid thread_id") from exc
+    _ensure_thread_owner(thread_id, current_user.subject)
     target_dir = updated_dir / f"session_{thread_id}"
     target_dir.mkdir(parents=True, exist_ok=True)
 
     saved_files = []
     # 2. [保存] 遍历并写入文件
     for file in files:
-        file_path = target_dir / file.filename
+        filename = Path(file.filename or "").name
+        if not filename or filename in {".", ".."}:
+            raise HTTPException(status_code=422, detail="Invalid upload filename")
+        file_path = target_dir / filename
         # 使用二进制模式写入，支持各种文件格式 (图片、PDF、文本等)
         # shutil.copyfileobj 高效复制文件流，避免一次性加载大文件到内存
         with file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        saved_files.append(file.filename)
+        saved_files.append(filename)
 
     # 3. [响应] 返回成功保存的文件列表
     return {"status": "uploaded", "files": saved_files}
 
 
 @app.get("/api/download")
-async def download_file(path: str):
-    """
-    文件下载接口 (File Download)。
-
-    目标：
-    1. 根据绝对路径下载文件。
-    2. 严格的安全检查，防止越权访问。
-
-    Args:
-        path (str): 文件的绝对路径 (通常从 list_files 接口获取)。
-    """
-    # 1. [安全检查] 路径解析与越权校验
+async def download_file(
+    path: str,
+    current_user: Principal = Depends(get_current_user),
+):
     try:
         abs_path = Path(path).resolve()
         output_abs = output_dir.resolve()
@@ -167,7 +465,10 @@ async def download_file(path: str):
 
 
 @app.get("/api/files")
-async def list_files(path: str):
+async def list_files(
+    path: str,
+    current_user: Principal = Depends(get_current_user),
+):
     """
     文件列表查询接口 (File Explorer)。
 
@@ -226,56 +527,91 @@ async def list_files(path: str):
     return {"files": files}
 
 
-# 当浏览器请求 ws://localhost:8000/ws/thread_123 时：
-# 1. 路由匹配 ：FastAPI 发现这个 URL 匹配了你写的 @app.websocket("/ws/{thread_id}") 。
-# 2. 创建对象 ：FastAPI (基于 Starlette) 会立刻在 主事件循环 中实例化一个 WebSocket 对象。
-#    - 这个对象封装了底层的 TCP 连接、HTTP 握手信息、以及后续的消息收发方法 ( send_text , receive_text 等)。
-# 3. 注入参数 ：FastAPI 自动把这个刚创建好的 WebSocket 对象，作为参数传给你的 websocket_endpoint(websocket, ...) 函数。
 @app.websocket("/ws/{thread_id}")
 async def websocket_endpoint(websocket: WebSocket, thread_id: str):
-    print(f"会话向我们发起了请求，要求简历连接：{thread_id} 对应：{websocket}")
-    """
-    WebSocket 实时通讯核心接口 (Real-time Communication)。
-
-    目标：
-    1. 建立长连接，实现服务端与前端的双向通信。
-    2. 绑定 `thread_id`，实现会话级消息隔离。
-    3. 维持心跳 (Keep-Alive)，防止连接超时。
-
-    执行步骤：
-    1. 握手：接受 WebSocket 连接请求。
-    2. 注册：将连接实例绑定到 `monitor.manager`，关联 `thread_id`。
-    3. 循环：进入消息监听循环，处理前端发送的心跳或指令。
-    4. 异常：捕获断开连接异常，清理资源。
-
-    Args:
-        websocket (WebSocket): WebSocket 连接实例。
-        thread_id (str): 当前会话的唯一标识。
-    """
-    # 1. [注册] 建立连接并绑定到管理器
-    await manager.connect(websocket, thread_id)
-
+    """Authenticate the first message before registering or replaying events."""
+    await websocket.accept()
+    authenticated = False
     try:
-        # 2. [循环] 保持连接活跃
-        while True:
-            # 3. [监听] 接收前端消息 (通常是 ping 心跳)
-            data = await websocket.receive_text()
+        settings = AuthSettings.from_env()
+        try:
+            auth_message = await asyncio.wait_for(
+                websocket.receive_json(),
+                timeout=settings.ws_auth_timeout_seconds,
+            )
+        except (asyncio.TimeoutError, ValueError, WebSocketDisconnect):
+            await websocket.close(code=1008)
+            return
 
-            # 4. [响应] 回复 pong 消息
-            await websocket.send_json({
-                "type": "pong",
-                "message": f"服务端已收到: {data}"
-            })
+        if not isinstance(auth_message, dict) or auth_message.get("type") != "auth":
+            await websocket.close(code=1008)
+            return
+
+        token = auth_message.get("token")
+        if not isinstance(token, str) or not token:
+            await websocket.close(code=1008)
+            return
+
+        try:
+            principal = decode_access_token(token, settings)
+        except ValueError:
+            await websocket.close(code=1008)
+            return
+
+        await websocket.send_json({"type": "auth_ok"})
+        authenticated = True
+        expires_in = (principal.expires_at or 0) - time.time()
+        if expires_in <= 0:
+            await websocket.close(code=1008)
+            return
+
+        thread_id = thread_id.strip()
+        try:
+            thread_id = str(uuid.UUID(thread_id))
+        except ValueError:
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", thread_id):
+                await websocket.close(code=1008)
+                return
+        try:
+            _ensure_thread_owner(thread_id, principal.subject, create=True)
+        except HTTPException:
+            await websocket.close(code=1008)
+            return
+
+        async def run_authenticated_socket():
+            await manager.register_authenticated(websocket, thread_id)
+            while True:
+                data = await websocket.receive_text()
+                await websocket.send_json({
+                    "type": "pong",
+                    "message": f"服务端已收到: {data}",
+                })
+
+        try:
+            await asyncio.wait_for(
+                run_authenticated_socket(),
+                timeout=expires_in,
+            )
+        except asyncio.TimeoutError:
+            await websocket.close(code=1008)
+            return
 
     except WebSocketDisconnect:
-        # 5. [清理] 客户端主动断开
-        manager.disconnect(websocket, thread_id)
-        print(f"[WebSocket] 客户端已断开: {thread_id}")
-
-    except Exception as e:
-        # 6. [异常] 发生错误时断开
-        print(f"[WebSocket] 连接异常: {e}")
-        manager.disconnect(websocket, thread_id)
+        pass
+    except AuthConfigurationError:
+        try:
+            await websocket.close(code=1011)
+        except Exception:
+            pass
+    except Exception as exc:
+        print(f"[WebSocket] 连接异常: {exc}")
+        try:
+            await websocket.close(code=1011)
+        except Exception:
+            pass
+    finally:
+        if authenticated:
+            manager.disconnect(websocket, thread_id)
 
 if __name__ == "__main__":
     uvicorn.run("api.server:app", host="0.0.0.0", port=8000, reload=True)

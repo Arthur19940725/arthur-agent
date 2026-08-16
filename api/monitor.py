@@ -3,6 +3,7 @@ import asyncio
 from typing import Any, Dict, Optional
 from fastapi import WebSocket
 from api.context import get_thread_context
+from api.history import EventHistory
 
 # 尝试导入全局运行时（用于脚本模式下的流式输出）
 try:
@@ -117,6 +118,21 @@ class ToolMonitor:
         """报告任务工作目录"""
         self._emit("session_created", f"工作目录已创建: {path}", {"path": path})
 
+    def report_waiting_for_approval(self, approvals: list[dict]):
+        """报告图已经安全暂停，正在等待用户处理敏感操作。"""
+        self._emit(
+            "waiting_for_approval",
+            "敏感操作等待人工确认",
+            {"approvals": approvals},
+        )
+
+    def report_approval_resumed(self, decisions: list[dict]):
+        """报告审批决定已提交，图将从 checkpoint 恢复。"""
+        event = "approval_rejected" if any(
+            decision.get("type") == "reject" for decision in decisions
+        ) else "approval_resumed"
+        self._emit(event, "审批决定已提交，任务继续执行", {})
+
 
 # 全局单例实例
 monitor = ToolMonitor()
@@ -125,6 +141,8 @@ monitor = ToolMonitor()
 class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
+        self.event_history = EventHistory.from_env() if hasattr(EventHistory, "from_env") else EventHistory()
+        self.task_status: Dict[str, Dict[str, Any]] = {}
         # 延迟绑定 loop，防止初始化时 loop 不一致
         self.loop = None
 
@@ -134,14 +152,65 @@ class ConnectionManager:
         monitor.set_websocket_manager(self)
         print(f"[Monitor] ConnectionManager manually bound to loop: {id(self.loop)}")
 
-    async def connect(self, websocket: WebSocket, thread_id: str):
-        await websocket.accept()
-        print(f"存储当前会话id:{thread_id}对应的:{websocket}")
+    def mark_started(self, thread_id: str, query: str = ""):
+        self.task_status[thread_id] = {
+            "status": "started",
+            "query": query,
+            "result": "",
+        }
+        self.event_history.replay(thread_id)
+
+    def get_task(self, thread_id: str) -> Dict[str, Any]:
+        status = self.task_status.get(thread_id) or {
+            "status": "unknown",
+            "query": "",
+            "result": "",
+        }
+        history = self.event_history.replay(thread_id)
+        return {
+            "thread_id": thread_id,
+            **status,
+            "events": list(history.events),
+            "first_available_seq": history.first_available_seq,
+            "next_seq": history.next_seq,
+            "dropped_events": history.dropped_events,
+        }
+
+    def _record_event(self, thread_id: str, message: dict):
+        event = message.get("event")
+        data = message.get("data") or {}
+        current = self.task_status.setdefault(thread_id, {
+            "status": "started",
+            "query": "",
+            "result": "",
+        })
+        if event == "task_result":
+            current["status"] = "completed"
+            current["result"] = data.get("result", "")
+        elif event == "error":
+            current["status"] = "error"
+            current["result"] = message.get("message", "")
+        elif event == "waiting_for_approval":
+            current["status"] = "waiting_for_approval"
+            current["approvals"] = data.get("approvals", [])
+        elif event in {"approval_resumed", "approval_rejected"}:
+            current["status"] = "running"
+            current.pop("approvals", None)
+        elif current.get("status") == "started":
+            current["status"] = "running"
+        self.event_history.append(thread_id, message)
+
+    async def register_authenticated(self, websocket: WebSocket, thread_id: str):
+        """Register a socket after the caller has completed authentication."""
         self.active_connections[thread_id] = websocket
+        print(f"存储当前会话id:{thread_id}对应的:{websocket}")
         print(f"Client connected: {thread_id}")
+        history = self.event_history.replay(thread_id)
+        for event in history.events:
+            await websocket.send_json(event)
 
     def disconnect(self, websocket: WebSocket, thread_id: str):
-        if thread_id in self.active_connections:
+        if self.active_connections.get(thread_id) is websocket:
             del self.active_connections[thread_id]
         print(f"Client disconnected: {thread_id}")
 
@@ -149,6 +218,7 @@ class ConnectionManager:
         await websocket.send_text(message)
 
     async def send_to_thread(self, message: dict, thread_id: str):
+        self._record_event(thread_id, message)
         if thread_id in self.active_connections:
             websocket = self.active_connections[thread_id]
             await websocket.send_json(message)

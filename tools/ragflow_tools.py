@@ -53,7 +53,7 @@ def get_assistant_list() -> str:
     except Exception as e:
         return f"查询助手信息异常，无可用助手,异常信息:{str(e)}"
 
-# 2. 对某个助手进行提问（创建会话 -》 提问 -》 删除会话）
+# 2. 对某个助手进行提问（创建会话 -> 提问 -> 删除会话）
 @tool
 def create_ask_delete(chat_name,question)->str:
     """
@@ -84,7 +84,7 @@ def create_ask_delete(chat_name,question)->str:
             # print(part.content)
             result = part.content
         # 5. 关闭提问的会话
-        # chat -> 关闭 -》  session
+        # chat -> 关闭 ->  session
         use_chat.delete_sessions(ids=[session.id])
         # 6. 返回结果
         return result

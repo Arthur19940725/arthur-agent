@@ -24,7 +24,7 @@ def create_knowledge_base(knowledge_base_name, description):
 
 if __name__ == '__main__':
     # 创建知识库
-    create_knowledge_base("代码创建的知识库111", "今晚打老虎！！",)
+    create_knowledge_base("代码创建的知识库", "TEST",)
 
 # 使用上传文件到知识库
 def upload_file_to_knowledge_base(kb_id, file_paths):
