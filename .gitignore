@@ -24,6 +24,10 @@ __pycache__/
 # ========================
 output/
 updated/
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
 
 # ========================
 # 虚拟环境

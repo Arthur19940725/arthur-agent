@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0c10">
+  <title>Deep Search Pro</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font: 100%/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --canvas: #090b0e;
+      --canvas-soft: #0e1116;
+      --surface: rgba(27, 31, 38, 0.94);
+      --surface-raised: rgba(38, 43, 52, 0.9);
+      --surface-soft: rgba(255, 255, 255, 0.045);
+      --glass: rgba(16, 19, 24, 0.72);
+      --line: rgba(255, 255, 255, 0.1);
+      --line-strong: rgba(255, 255, 255, 0.17);
+      --text: #f5f7fa;
+      --text-soft: #c8ced8;
+      --muted: #929ba8;
+      --accent: #78a9ff;
+      --accent-strong: #9bc0ff;
+      --accent-ink: #071221;
+      --success: #76d99b;
+      --warning: #f0c875;
+      --danger: #ff9494;
+      --radius-xl: 1.75rem;
+      --radius-lg: 1.25rem;
+      --radius-md: 0.875rem;
+      --shadow-lg: 0 1.5rem 4rem rgba(0, 0, 0, 0.3);
+      --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 20rem;
+      background: var(--canvas);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% -8%, rgba(62, 112, 204, 0.18), transparent 32rem),
+        radial-gradient(circle at 92% 12%, rgba(99, 74, 177, 0.1), transparent 28rem),
+        linear-gradient(180deg, var(--canvas-soft), var(--canvas) 34rem);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    input,
+    textarea,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      border: 0;
+    }
+
+    a {
+      color: var(--accent-strong);
+      text-underline-offset: 0.2em;
+    }
+
+    a:hover {
+      color: #bdd5ff;
+    }
+
+    .app-header {
+      position: sticky;
+      z-index: 10;
+      top: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background: var(--glass);
+      box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.12);
+      backdrop-filter: blur(1.5rem) saturate(150%);
+      -webkit-backdrop-filter: blur(1.5rem) saturate(150%);
+    }
+
+    .header-inner,
+    .workspace {
+      width: min(100% - 2rem, 70rem);
+      margin-inline: auto;
+    }
+
+    .header-inner {
+      min-height: 4.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-mark {
+      width: 2.25rem;
+      height: 2.25rem;
+      flex: 0 0 auto;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 0.75rem;
+      background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.95) 0 0.11rem, transparent 0.13rem),
+        radial-gradient(circle at 65% 61%, rgba(255, 255, 255, 0.82) 0 0.13rem, transparent 0.15rem),
+        linear-gradient(145deg, #87b5ff, #4c6bd9 58%, #7159bf);
+      box-shadow: 0 0.45rem 1.4rem rgba(75, 120, 222, 0.32), var(--shadow-inset);
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 0.52rem;
+      border: 1px solid rgba(255, 255, 255, 0.64);
+      border-radius: 50%;
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .brand-kicker,
+    .eyebrow {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.69rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .brand-name {
+      margin: 0.15rem 0 0;
+      overflow: hidden;
+      font-size: 0.98rem;
+      font-weight: 650;
+      letter-spacing: -0.015em;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .status-pill,
+    .section-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-soft);
+      font-size: 0.78rem;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .status-pill {
+      min-height: 2rem;
+      padding: 0.35rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      box-shadow: var(--shadow-inset);
+    }
+
+    .status-dot {
+      width: 0.46rem;
+      height: 0.46rem;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 0.2rem rgba(146, 155, 168, 0.1);
+    }
+
+    .status-pill[data-tone="success"] .status-dot {
+      background: var(--success);
+      box-shadow: 0 0 0 0.2rem rgba(118, 217, 155, 0.11);
+    }
+
+    .status-pill[data-tone="working"] .status-dot {
+      background: var(--accent);
+      box-shadow: 0 0 0 0.2rem rgba(120, 169, 255, 0.12);
+    }
+
+    .status-pill[data-tone="warning"] .status-dot {
+      background: var(--warning);
+      box-shadow: 0 0 0 0.2rem rgba(240, 200, 117, 0.11);
+    }
+
+    .status-pill[data-tone="danger"] .status-dot {
+      background: var(--danger);
+      box-shadow: 0 0 0 0.2rem rgba(255, 148, 148, 0.11);
+    }
+
+    .workspace {
+      padding-block: clamp(2.5rem, 7vw, 5.75rem) 2.5rem;
+    }
+
+    .hero {
+      max-width: 47rem;
+      margin-bottom: clamp(2rem, 5vw, 3.5rem);
+    }
+
+    .hero h1 {
+      margin: 0.75rem 0 1rem;
+      font-size: clamp(2.25rem, 6vw, 4.6rem);
+      font-weight: 680;
+      letter-spacing: -0.055em;
+      line-height: 0.98;
+      text-wrap: balance;
+    }
+
+    .hero-copy {
+      max-width: 40rem;
+      margin: 0;
+      color: var(--text-soft);
+      font-size: clamp(1rem, 2vw, 1.13rem);
+      line-height: 1.72;
+      text-wrap: pretty;
+    }
+
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
+    }
+
+    .card {
+      min-width: 0;
+      padding: clamp(1.15rem, 3vw, 1.65rem);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background: var(--surface);
+      box-shadow: var(--shadow-lg), var(--shadow-inset);
+    }
+
+    .auth-card {
+      background:
+        linear-gradient(145deg, rgba(120, 169, 255, 0.07), transparent 45%),
+        var(--surface);
+    }
+
+    .query-card {
+      border-color: rgba(120, 169, 255, 0.16);
+      background:
+        linear-gradient(155deg, rgba(120, 169, 255, 0.09), transparent 42%),
+        var(--surface);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-heading h2 {
+      margin: 0.3rem 0 0;
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      font-weight: 650;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+
+    .section-state {
+      min-height: 1.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: var(--surface-soft);
+    }
+
+    .field {
+      min-width: 0;
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .field label {
+      color: var(--text-soft);
+      font-size: 0.79rem;
+      font-weight: 650;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.8rem;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      outline: 0;
+      background: rgba(6, 8, 12, 0.52);
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+      transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    input {
+      min-height: 3rem;
+      padding: 0.72rem 0.9rem;
+    }
+
+    textarea {
+      min-height: 8.25rem;
+      resize: vertical;
+      padding: 0.9rem 1rem;
+      line-height: 1.62;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #737d8b;
+    }
+
+    input:hover,
+    textarea:hover {
+      border-color: var(--line-strong);
+      background: rgba(8, 10, 15, 0.65);
+    }
+
+    input:focus-visible,
+    textarea:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 0.22rem rgba(120, 169, 255, 0.17);
+    }
+
+    .form-actions,
+    .composer-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .form-actions {
+      justify-content: flex-end;
+    }
+
+    .button {
+      min-height: 2.75rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1rem;
+      border: 1px solid transparent;
+      border-radius: 0.85rem;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 680;
+      letter-spacing: -0.01em;
+      transition: transform 100ms ease, background-color 140ms ease, border-color 140ms ease, opacity 140ms ease;
+    }
+
+    .button-primary {
+      background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+      color: var(--accent-ink);
+      box-shadow: 0 0.55rem 1.4rem rgba(75, 119, 211, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+
+    .button-primary:hover:not(:disabled) {
+      background: linear-gradient(180deg, #bad3ff, #8bb6ff);
+    }
+
+    .button-secondary {
+      min-height: 2.1rem;
+      padding: 0.35rem 0.65rem;
+      border-color: var(--line);
+      border-radius: 0.7rem;
+      background: var(--surface-soft);
+      color: var(--text-soft);
+      font-size: 0.76rem;
+    }
+
+    .button-secondary:hover:not(:disabled) {
+      border-color: var(--line-strong);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .button:focus-visible,
+    a:focus-visible {
+      outline: 0.18rem solid rgba(155, 192, 255, 0.9);
+      outline-offset: 0.18rem;
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+      box-shadow: none;
+    }
+
+    .keyboard-hint,
+    .form-message {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .form-message {
+      min-height: 1.25rem;
+      margin: 0.8rem 0 0;
+    }
+
+    .form-message[data-tone="danger"] {
+      color: var(--danger);
+    }
+
+    .form-message[data-tone="success"] {
+      color: var(--success);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
+    }
+
+    .answer,
+    .log {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .answer {
+      min-height: 11rem;
+      color: var(--text-soft);
+      line-height: 1.72;
+      white-space: pre-wrap;
+    }
+
+    .answer[data-state="ready"] {
+      color: var(--text);
+    }
+
+    .answer[data-state="error"] {
+      color: var(--danger);
+    }
+
+    .empty-copy {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .log {
+      max-height: 22rem;
+      min-height: 11rem;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      scrollbar-width: thin;
+    }
+
+    .log-entry {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 0.65rem;
+      padding-block: 0.72rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      color: var(--text-soft);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    .log-entry:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .log-entry:last-child {
+      padding-bottom: 0;
+    }
+
+    .log-icon {
+      width: 1.4rem;
+      height: 1.4rem;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(120, 169, 255, 0.12);
+      color: var(--accent-strong);
+      font-size: 0.68rem;
+      font-weight: 800;
+    }
+
+    .log-entry[data-kind="success"] .log-icon {
+      background: rgba(118, 217, 155, 0.12);
+      color: var(--success);
+    }
+
+    .log-entry[data-kind="error"] .log-icon {
+      background: rgba(255, 148, 148, 0.12);
+      color: var(--danger);
+    }
+
+    .log-entry[data-kind="warning"] .log-icon {
+      background: rgba(240, 200, 117, 0.12);
+      color: var(--warning);
+    }
+
+    .log-time {
+      padding-top: 0.08rem;
+      color: var(--muted);
+      font-size: 0.69rem;
+      white-space: nowrap;
+    }
+
+    .app-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.4rem 0 0.25rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .thread-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    @media (min-width: 46rem) {
+      .field-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+        align-items: end;
+      }
+
+      .auth-card .form-actions {
+        margin: 0;
+      }
+
+      .result-grid {
+        grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+      }
+    }
+
+    @media (max-width: 45.99rem) {
+      .header-inner,
+      .workspace {
+        width: min(100% - 1.25rem, 70rem);
+      }
+
+      .workspace {
+        padding-top: 2.5rem;
+      }
+
+      .hero h1 {
+        letter-spacing: -0.045em;
+      }
+
+      .card {
+        border-radius: var(--radius-lg);
+      }
+
+      .form-actions .button,
+      .composer-footer .button {
+        width: 100%;
+      }
+
+      .composer-footer {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .keyboard-hint {
+        order: 2;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 29.99rem) {
+      .header-inner {
+        min-height: 4rem;
+      }
+
+      .brand-kicker {
+        display: none;
+      }
+
+      .status-pill {
+        max-width: 8.5rem;
+      }
+
+      .status-pill span:last-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .section-heading,
+      .app-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .app-footer {
+        gap: 0.5rem;
+      }
+
+      .thread-label {
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+
+      .button:active:not(:disabled) {
+        transform: none;
+      }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      .app-header,
+      .card {
+        background: var(--surface);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+    }
+
+    @media (prefers-contrast: more) {
+      :root {
+        --line: rgba(255, 255, 255, 0.28);
+        --line-strong: rgba(255, 255, 255, 0.48);
+        --muted: #c4cad2;
+        --text-soft: #e7eaf0;
+      }
+
+      .card,
+      input,
+      textarea,
+      .status-pill {
+        border-width: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand" aria-label="Deep Search Pro">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div class="brand-copy">
+          <p class="brand-kicker">Multi-agent research</p>
+          <p class="brand-name">Deep Search Pro</p>
+        </div>
+      </div>
+      <div class="status-pill" id="connection-status" data-tone="neutral" role="status" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="connection-status-text">未登录</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow">Intelligent workspace</p>
+      <h1 id="page-title">让复杂问题，变得清晰。</h1>
+      <p class="hero-copy">连接多个专业智能体，实时查看检索、分析与汇总过程，并在同一会话中持续深入。</p>
+    </section>
+
+    <div class="workspace-grid">
+      <section class="card auth-card" aria-labelledby="auth-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Secure access</p>
+            <h2 id="auth-title">登录工作区</h2>
+          </div>
+          <span class="section-state" id="auth-state">需要登录</span>
+        </div>
+
+        <form id="login" novalidate>
+          <div class="field-row">
+            <div class="field">
+              <label for="username">用户名</label>
+              <input id="username" name="username" autocomplete="username" placeholder="输入用户名" required>
+            </div>
+            <div class="field">
+              <label for="password">密码</label>
+              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="输入密码" required>
+            </div>
+            <div class="form-actions">
+              <button class="button button-primary" id="login-button" type="submit">登录</button>
+            </div>
+          </div>
+          <p class="form-message" id="login-message" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card query-card" aria-labelledby="query-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Ask the agent</p>
+            <h2 id="query-title">提出你的问题</h2>
+          </div>
+          <span class="section-state" id="task-state">等待提问</span>
+        </div>
+
+        <form id="query-form">
+          <div class="field">
+            <label for="query">问题</label>
+            <textarea id="query" name="query" placeholder="例如：今天杭州天气如何？请结合出行建议进行分析。" required>今天杭州天气？</textarea>
+          </div>
+          <div class="composer-footer">
+            <span class="keyboard-hint">Ctrl / ⌘ + Enter 发送</span>
+            <button class="button button-primary" id="send" type="submit" disabled>发送问题</button>
+          </div>
+        </form>
+      </section>
+
+      <div class="result-grid" aria-label="任务结果">
+        <article class="card answer-card" aria-labelledby="answer-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Answer</p>
+              <h2 id="answer-title">智能体回答</h2>
+            </div>
+          </div>
+          <div class="answer" id="answer" data-state="empty" role="status" aria-live="polite" aria-busy="false">等待提问…</div>
+        </article>
+
+        <section class="card progress-card" aria-labelledby="progress-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Live activity</p>
+              <h2 id="progress-title">执行记录</h2>
+            </div>
+            <button class="button button-secondary" id="reconnect" type="button" hidden>重新连接</button>
+          </div>
+          <div class="log" id="log" role="log" aria-live="polite" aria-relevant="additions text">
+            <p class="empty-copy">智能体开始工作后，进度会显示在这里。</p>
+          </div>
+        </section>
+
+        <section class="card approval-card" id="approval-card" hidden aria-labelledby="approval-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Human approval</p>
+              <h2 id="approval-title">敏感操作确认</h2>
+            </div>
+          </div>
+          <div id="approval-copy" class="answer"></div>
+          <div class="composer-footer">
+            <span class="keyboard-hint">确认后智能体才会执行该操作</span>
+            <button class="button button-secondary" id="approval-reject" type="button">拒绝</button>
+            <button class="button button-primary" id="approval-approve" type="button">批准执行</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      <span class="thread-label" id="thread-label"></span>
+      <a href="/docs">查看 API 文档</a>
+    </footer>
+  </main>
+
+  <script>
+    const elements = {
+      answer: document.getElementById("answer"),
+      authState: document.getElementById("auth-state"),
+      connectionStatus: document.getElementById("connection-status"),
+      connectionStatusText: document.getElementById("connection-status-text"),
+      loginButton: document.getElementById("login-button"),
+      loginForm: document.getElementById("login"),
+      loginMessage: document.getElementById("login-message"),
+      log: document.getElementById("log"),
+      password: document.getElementById("password"),
+      query: document.getElementById("query"),
+      queryForm: document.getElementById("query-form"),
+      reconnect: document.getElementById("reconnect"),
+      approvalCard: document.getElementById("approval-card"),
+      approvalCopy: document.getElementById("approval-copy"),
+      approvalApprove: document.getElementById("approval-approve"),
+      approvalReject: document.getElementById("approval-reject"),
+      send: document.getElementById("send"),
+      taskState: document.getElementById("task-state"),
+      threadLabel: document.getElementById("thread-label"),
+      username: document.getElementById("username"),
+    };
+
+    const threadStorageKey = "deep-search-pro-thread-id";
+    const tokenStorageKey = "deep-search-pro-access-token";
+    const threadId = localStorage.getItem(threadStorageKey) || crypto.randomUUID();
+    localStorage.setItem(threadStorageKey, threadId);
+
+    const state = {
+      accessToken: sessionStorage.getItem(tokenStorageKey),
+      auth: "signed_out",
+      connection: "idle",
+      connectionPromise: null,
+      task: "idle",
+      approval: null,
+      websocket: null,
+    };
+
+    if (state.accessToken) {
+      state.auth = "authenticated";
+    }
+
+    elements.threadLabel.textContent = `会话 ${threadId}`;
+
+    function setLoginMessage(message = "", tone = "neutral") {
+      elements.loginMessage.textContent = message;
+      elements.loginMessage.dataset.tone = tone;
+    }
+
+    function getStatusPresentation() {
+      if (state.auth === "authenticating") {
+        return { label: "正在验证", tone: "working" };
+      }
+      if (state.auth !== "authenticated") {
+        return { label: "未登录", tone: "neutral" };
+      }
+      if (state.connection === "connecting" || state.connection === "authenticating") {
+        return { label: "正在连接", tone: "working" };
+      }
+      if (state.connection === "ready") {
+        return { label: state.task === "running" ? "智能体工作中" : "实时连接已就绪", tone: "success" };
+      }
+      if (state.connection === "disconnected") {
+        return { label: "实时连接已断开", tone: "warning" };
+      }
+      return { label: "已登录", tone: "success" };
+    }
+
+    function getTaskLabel() {
+      const labels = {
+        idle: "等待提问",
+        submitting: "正在启动",
+        running: "执行中",
+        completed: "已完成",
+        waiting_for_approval: "等待人工确认",
+        error: "需要处理",
+      };
+      return labels[state.task] || "等待提问";
+    }
+
+      function renderState() {
+      const status = getStatusPresentation();
+      const taskIsActive = state.task === "submitting" || state.task === "running";
+      const isAuthenticated = state.auth === "authenticated" && Boolean(state.accessToken);
+
+      elements.connectionStatus.dataset.tone = status.tone;
+      elements.connectionStatusText.textContent = status.label;
+      elements.authState.textContent = state.auth === "authenticating"
+        ? "验证中"
+        : isAuthenticated
+          ? "已登录"
+          : "需要登录";
+      elements.taskState.textContent = getTaskLabel();
+      elements.loginButton.disabled = state.auth === "authenticating";
+      elements.loginButton.textContent = state.auth === "authenticating" ? "正在登录…" : "登录";
+      elements.send.disabled = !isAuthenticated || taskIsActive;
+      elements.send.textContent = state.task === "submitting"
+        ? "正在连接…"
+        : state.task === "running"
+          ? "正在执行…"
+          : "发送问题";
+      elements.query.disabled = taskIsActive;
+      elements.answer.setAttribute("aria-busy", String(taskIsActive));
+      elements.reconnect.hidden = !(isAuthenticated && state.connection === "disconnected");
+    }
+
+    function clearLog(message = "") {
+      elements.log.replaceChildren();
+      if (message) {
+        const empty = document.createElement("p");
+        empty.className = "empty-copy";
+        empty.textContent = message;
+        elements.log.appendChild(empty);
+      }
+    }
+
+    function formatTime(timestamp) {
+      const date = timestamp ? new Date(timestamp) : new Date();
+      if (Number.isNaN(date.getTime())) return "现在";
+      return new Intl.DateTimeFormat("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(date);
+    }
+
+    function appendLog(message, kind = "info", timestamp = null) {
+      if (!message) return;
+      const empty = elements.log.querySelector(".empty-copy");
+      if (empty) empty.remove();
+
+      const entry = document.createElement("div");
+      entry.className = "log-entry";
+      entry.dataset.kind = kind;
+
+      const icon = document.createElement("span");
+      icon.className = "log-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = kind === "success" ? "✓" : kind === "error" ? "!" : kind === "warning" ? "·" : "→";
+
+      const copy = document.createElement("span");
+      copy.textContent = message;
+
+      const time = document.createElement("time");
+      time.className = "log-time";
+      time.textContent = formatTime(timestamp);
+      if (timestamp) time.dateTime = timestamp;
+
+      entry.append(icon, copy, time);
+      elements.log.appendChild(entry);
+      elements.log.scrollTop = elements.log.scrollHeight;
+    }
+
+    function closeCurrentSocket() {
+      const connection = state.websocket;
+      state.websocket = null;
+      state.connectionPromise = null;
+      if (connection && connection.readyState < WebSocket.CLOSING) {
+        connection.close();
+      }
+    }
+
+    function clearSession(message = "请重新登录后继续。") {
+      state.accessToken = null;
+      state.auth = "signed_out";
+      state.connection = "idle";
+      state.task = state.task === "running" || state.task === "submitting" ? "error" : state.task;
+      sessionStorage.removeItem(tokenStorageKey);
+      closeCurrentSocket();
+      setLoginMessage(message, "danger");
+      renderState();
+    }
+
+    function parseSocketMessage(event) {
+      try {
+        return JSON.parse(event.data);
+      } catch (error) {
+        appendLog("收到无法解析的实时消息。", "warning");
+        return null;
+      }
+    }
+
+    function describeEvent(payload) {
+      const data = payload.data || {};
+      if (payload.message) return payload.message;
+      if (payload.event === "tool_start" && data.tool_name) return `开始执行工具：${data.tool_name}`;
+      if (payload.event === "assistant_call" && data.assistant_name) return `正在调用助手：${data.assistant_name}`;
+      if (payload.event === "session_created") return "任务工作区已创建";
+      return "收到新的执行状态";
+    }
+
+    function renderApproval(approvals) {
+      const approval = approvals && approvals[0];
+      if (!approval) {
+        elements.approvalCard.hidden = true;
+        state.approval = null;
+        return;
+      }
+      state.approval = approval;
+      const actions = approval.action_requests || [];
+      elements.approvalCopy.textContent = actions.map((action) => {
+        const args = JSON.stringify(action.args || {}, null, 2);
+        return `${action.name}\n${action.description || ""}\n参数：${args}`;
+      }).join("\n\n");
+      elements.approvalCard.hidden = false;
+      state.task = "waiting_for_approval";
+      renderState();
+    }
+
+    async function submitApproval(type) {
+      if (!state.approval || !state.accessToken) return;
+      elements.approvalApprove.disabled = true;
+      elements.approvalReject.disabled = true;
+      try {
+        const response = await fetch(`/api/task/${threadId}/approval`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${state.accessToken}`,
+          },
+          body: JSON.stringify({
+            approval_id: state.approval.approval_id,
+            decisions: (state.approval.action_requests || []).map(() => ({ type })),
+          }),
+        });
+        if (response.status === 401) {
+          clearSession("登录状态已失效，请重新登录。");
+          return;
+        }
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
+        elements.approvalCard.hidden = true;
+        state.approval = null;
+        state.task = "running";
+        appendLog(type === "approve" ? "已批准敏感操作" : "已拒绝敏感操作", type === "approve" ? "success" : "warning");
+        renderState();
+      } catch (error) {
+        appendLog(`审批提交失败：${error.message}`, "error");
+        elements.approvalApprove.disabled = false;
+        elements.approvalReject.disabled = false;
+      }
+    }
+
+    async function refreshApproval() {
+      if (!state.accessToken) return;
+      try {
+        const response = await fetch(`/api/task/${threadId}/approval`, {
+          headers: { "Authorization": `Bearer ${state.accessToken}` },
+        });
+        if (response.ok) renderApproval([await response.json()]);
+      } catch (error) {
+        appendLog("无法恢复待审批操作。", "warning");
+      }
+    }
+
+    function handleMonitorEvent(payload) {
+      const eventType = payload.event || payload.type;
+      const message = describeEvent(payload);
+
+      if (eventType === "waiting_for_approval") {
+        renderApproval(payload.data && payload.data.approvals);
+        appendLog("敏感操作等待人工确认", "warning", payload.timestamp);
+        return;
+      }
+
+      if (eventType === "approval_resumed" || eventType === "approval_rejected") {
+        elements.approvalCard.hidden = true;
+        state.approval = null;
+        state.task = "running";
+        renderState();
+        return;
+      }
+
+      if (eventType === "task_result") {
+        const result = payload.data && payload.data.result ? payload.data.result : payload.message || "任务已完成。";
+        elements.answer.textContent = result;
+        elements.answer.dataset.state = "ready";
+        state.task = "completed";
+        appendLog("任务完成", "success", payload.timestamp);
+        renderState();
+        return;
+      }
+
+      if (eventType === "error") {
+        elements.answer.textContent = payload.message || "任务执行失败，请稍后重试。";
+        elements.answer.dataset.state = "error";
+        state.task = "error";
+        appendLog(payload.message || "任务执行失败", "error", payload.timestamp);
+        renderState();
+        return;
+      }
+
+      if (eventType === "pong" || eventType === "auth_ok") return;
+      appendLog(message, "info", payload.timestamp);
+    }
+
+    function getWebSocket() {
+      if (!state.accessToken) {
+        return Promise.reject(new Error("请先登录"));
+      }
+      if (state.websocket && state.websocket.readyState === WebSocket.OPEN && state.connection === "ready") {
+        return Promise.resolve(state.websocket);
+      }
+      if (state.connectionPromise) return state.connectionPromise;
+
+      const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+      const connection = new WebSocket(`${protocol}//${location.host}/ws/${threadId}`);
+      state.websocket = connection;
+      state.connection = "connecting";
+      renderState();
+
+      state.connectionPromise = new Promise((resolve, reject) => {
+        let authenticated = false;
+        let settled = false;
+
+        const rejectConnection = (error) => {
+          if (settled) return;
+          settled = true;
+          state.connectionPromise = null;
+          reject(error);
+        };
+
+        connection.addEventListener("open", () => {
+          state.connection = "authenticating";
+          renderState();
+          connection.send(JSON.stringify({ type: "auth", token: state.accessToken }));
+        }, { once: true });
+
+        connection.addEventListener("message", (event) => {
+          const payload = parseSocketMessage(event);
+          if (!payload) return;
+
+          if (!authenticated && payload.type === "auth_ok") {
+            authenticated = true;
+            settled = true;
+            state.connection = "ready";
+            state.connectionPromise = null;
+            renderState();
+            resolve(connection);
+            return;
+          }
+
+          handleMonitorEvent(payload);
+        });
+
+        connection.addEventListener("error", () => {
+          rejectConnection(new Error("无法建立实时连接"));
+        });
+
+        connection.addEventListener("close", (event) => {
+          const isCurrent = state.websocket === connection;
+          if (isCurrent) state.websocket = null;
+          state.connectionPromise = null;
+
+          if (!authenticated) {
+            rejectConnection(new Error("实时连接认证失败"));
+          }
+          if (!isCurrent) return;
+
+          if (event.code === 1008) {
+            clearSession("登录状态已失效，请重新登录。");
+            return;
+          }
+
+          if (state.auth === "authenticated") {
+            state.connection = "disconnected";
+            appendLog("实时连接已断开，可重新连接以恢复会话进度。", "warning");
+            renderState();
+          }
+        });
+      });
+
+      return state.connectionPromise;
+    }
+
+    elements.loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!elements.loginForm.reportValidity()) return;
+
+      state.auth = "authenticating";
+      setLoginMessage("正在安全登录…");
+      renderState();
+
+      try {
+        const response = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            username: elements.username.value,
+            password: elements.password.value,
+          }),
+        });
+        if (!response.ok) throw new Error(response.status === 401 ? "用户名或密码不正确" : `HTTP ${response.status}`);
+
+        const data = await response.json();
+        if (!data.access_token) throw new Error("登录响应缺少访问令牌");
+
+        closeCurrentSocket();
+        state.accessToken = data.access_token;
+        state.auth = "authenticated";
+        state.connection = "idle";
+        sessionStorage.setItem(tokenStorageKey, state.accessToken);
+        elements.password.value = "";
+        setLoginMessage("登录成功，可以开始提问。", "success");
+        appendLog("登录成功", "success");
+        renderState();
+      } catch (error) {
+        clearSession(`登录失败：${error.message}`);
+      }
+    });
+
+    elements.approvalApprove.addEventListener("click", () => submitApproval("approve"));
+    elements.approvalReject.addEventListener("click", () => submitApproval("reject"));
+
+      event.preventDefault();
+      const query = elements.query.value.trim();
+      const taskIsActive = state.task === "submitting" || state.task === "running";
+      if (!query || taskIsActive) return;
+      if (!state.accessToken) {
+        setLoginMessage("请先登录后再提交问题。", "danger");
+        elements.username.focus();
+        return;
+      }
+
+      state.task = "submitting";
+      elements.answer.textContent = "正在连接智能体…";
+      elements.answer.dataset.state = "empty";
+      clearLog();
+      appendLog(`已连接会话 ${threadId}`, "info");
+      renderState();
+
+      try {
+        await getWebSocket();
+        const response = await fetch("/api/task", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${state.accessToken}`,
+          },
+          body: JSON.stringify({ query, thread_id: threadId }),
+        });
+
+        if (response.status === 401) {
+          clearSession("登录状态已失效，请重新登录。");
+          return;
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        if (state.task === "submitting") {
+          state.task = "running";
+          elements.answer.textContent = "智能体正在分析，请稍候…";
+        }
+        appendLog(`任务已启动：${data.thread_id}`, "success");
+        renderState();
+      } catch (error) {
+        if (state.auth === "authenticated") {
+          state.task = "error";
+          elements.answer.textContent = `任务启动失败：${error.message}`;
+          elements.answer.dataset.state = "error";
+          appendLog(`任务启动失败：${error.message}`, "error");
+          renderState();
+        }
+      }
+    });
+
+    elements.query.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.isComposing) {
+        event.preventDefault();
+        elements.queryForm.requestSubmit();
+      }
+    });
+
+    elements.reconnect.addEventListener("click", async () => {
+      elements.reconnect.disabled = true;
+      clearLog("正在恢复会话历史…");
+      try {
+        await getWebSocket();
+        await refreshApproval();
+        appendLog("实时连接已恢复", "success");
+      } catch (error) {
+        if (state.auth === "authenticated") {
+          state.connection = "disconnected";
+          appendLog(`重新连接失败：${error.message}`, "error");
+          renderState();
+        }
+      } finally {
+        elements.reconnect.disabled = false;
+      }
+    });
+
+    renderState();
+  </script>
+</body>
+</html>
