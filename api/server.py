@@ -107,7 +107,7 @@ async def lifespan(app: FastAPI):
             manager.event_history.cleanup()
 
 
-app = FastAPI(title="DeepAgents API", lifespan=lifespan)
+app = FastAPI(title="arthur-agent API", lifespan=lifespan)
 
 # 挂载输出目录，以便前端访问生成的静态文件
 # 假设输出目录位于项目根目录下的 output

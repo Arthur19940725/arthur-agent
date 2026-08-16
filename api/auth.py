@@ -16,8 +16,8 @@ from pwdlib import PasswordHash
 load_dotenv(find_dotenv())
 
 ALGORITHM = "HS256"
-DEFAULT_ISSUER = "deep-search-pro"
-DEFAULT_AUDIENCE = "deep-search-pro-api"
+DEFAULT_ISSUER = "arthur-agent"
+DEFAULT_AUDIENCE = "arthur-agent-api"
 DEFAULT_TOKEN_EXPIRE_MINUTES = 15
 MIN_SECRET_BYTES = 32
 REJECTED_SECRET_VALUES = {

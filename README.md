@@ -1,6 +1,6 @@
 
 
-# 🤖 Deep Search Pro
+# 🤖 arthur-agent
 
 **一个轻量的多智能体协作系统 —— Agent 开发入门实战项目**
 
@@ -104,8 +104,8 @@ api/monitor.py         ← 埋点监控 + 事件循环归属判断
 ### 第一步：克隆 + 装依赖
 
 ```bash
-git clone https://github.com/你的用户名/deep-search-pro.git
-cd deep-search-pro
+git clone https://github.com/你的用户名/arthur-agent.git
+cd arthur-agent
 pip install -r requirements.txt
 ```
 
@@ -132,8 +132,8 @@ AUTH_USER_ID=demo-user
 AUTH_PASSWORD_HASH=<argon2id-password-hash>
 JWT_SECRET_KEY=
 AUTH_TOKEN_EXPIRE_MINUTES=15
-AUTH_JWT_ISSUER=deep-search-pro
-AUTH_JWT_AUDIENCE=deep-search-pro-api
+AUTH_JWT_ISSUER=arthur-agent
+AUTH_JWT_AUDIENCE=arthur-agent-api
 AUTH_WS_AUTH_TIMEOUT_SECONDS=5
 AUTH_CORS_ORIGINS=
 
@@ -211,7 +211,7 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/task/<thread_id
 ## 📁 项目文件速查
 
 ```
-deep_search_pro/
+arthur-agent/
 │
 ├── agent/                          # 🤖 智能体层（核心）
 │   ├── llm.py                      # 模型初始化，10 行

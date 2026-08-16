@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0a0c10">
-  <title>Deep Search Pro</title>
+  <title>arthur-agent</title>
   <style>
     :root {
       color-scheme: dark;
@@ -673,11 +673,11 @@
 <body>
   <header class="app-header">
     <div class="header-inner">
-      <div class="brand" aria-label="Deep Search Pro">
+      <div class="brand" aria-label="arthur-agent">
         <span class="brand-mark" aria-hidden="true"></span>
         <div class="brand-copy">
           <p class="brand-kicker">Multi-agent research</p>
-          <p class="brand-name">Deep Search Pro</p>
+          <p class="brand-name">arthur-agent</p>
         </div>
       </div>
       <div class="status-pill" id="connection-status" data-tone="neutral" role="status" aria-live="polite">
@@ -814,8 +814,8 @@
       username: document.getElementById("username"),
     };
 
-    const threadStorageKey = "deep-search-pro-thread-id";
-    const tokenStorageKey = "deep-search-pro-access-token";
+    const threadStorageKey = "arthur-agent-thread-id";
+    const tokenStorageKey = "arthur-agent-access-token";
     const threadId = localStorage.getItem(threadStorageKey) || crypto.randomUUID();
     localStorage.setItem(threadStorageKey, threadId);
 
