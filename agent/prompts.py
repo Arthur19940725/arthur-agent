@@ -17,7 +17,7 @@ def load_yaml(file_path):
 # 尝试读取主和子智能体的配置文件和数据（供后续使用）
 # 项目的根地址
 # project_root_path  = Path(__file__).parent.parent
-project_root_path  = Path(__file__).parents[1] # prompts -> parents -> [agent , deep_search_pro]
+project_root_path  = Path(__file__).parents[1] # prompts -> parents -> [agent , arthur-agent]
 yaml_file_path = project_root_path / "prompt" / "prompts.yml"
 
 prompt_yaml_content = load_yaml(yaml_file_path)
