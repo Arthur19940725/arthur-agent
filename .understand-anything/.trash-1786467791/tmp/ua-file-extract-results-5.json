@@ -1,0 +1,62 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 29,
+      "nonEmptyLines": 26,
+      "metrics": {}
+    },
+    {
+      "path": ".understand-anything/config.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "sections": [
+        {
+          "heading": "outputLanguage",
+          "level": 1,
+          "line": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "prompt/prompts.yml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 74,
+      "nonEmptyLines": 74,
+      "sections": [
+        {
+          "heading": "main_agent",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "sub_agents",
+          "level": 1,
+          "line": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    }
+  ]
+}

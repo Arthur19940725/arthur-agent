@@ -1,0 +1,55 @@
+{
+  "nodes": [
+    {
+      "id": "file:.understand-anything/.understandignore",
+      "type": "file",
+      "name": ".understandignore",
+      "filePath": ".understand-anything/.understandignore",
+      "summary": "定义 Understand Anything 扫描时的排除规则与可选模式，当前主动忽略环境目录、输出目录和测试会话目录等内容。",
+      "tags": [
+        "configuration",
+        "analysis-scope",
+        "ignore-rules"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.understand-anything/config.json",
+      "type": "config",
+      "name": "config.json",
+      "filePath": ".understand-anything/config.json",
+      "summary": "设置 Understand Anything 的输出语言为中文，用于统一生成的代码库分析文本。",
+      "tags": [
+        "configuration",
+        "localization",
+        "knowledge-graph"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:prompt/prompts.yml",
+      "type": "config",
+      "name": "prompts.yml",
+      "filePath": "prompt/prompts.yml",
+      "summary": "集中定义空调企业场景下主智能体以及网络搜索、数据库查询和 RAGFlow 三类子智能体的 system prompt。配置同时约束工具路由、检索步骤、工作目录和文档生成顺序。",
+      "tags": [
+        "configuration",
+        "prompt-engineering",
+        "multi-agent",
+        "tool-routing",
+        "guardrails"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "YAML 通过多行块标量保存较长的中文 system prompt，并以 main_agent 与 sub_agents 两个顶层映射组织角色配置。"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:.understand-anything/config.json",
+      "target": "file:.understand-anything/.understandignore",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

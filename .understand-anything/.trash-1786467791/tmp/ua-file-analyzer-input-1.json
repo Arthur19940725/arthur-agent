@@ -1,0 +1,173 @@
+{
+  "projectRoot": "D:\\code\\deep-search-pro",
+  "batchFiles": [
+    {
+      "path": "agent/llm.py",
+      "language": "python",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/main_agent.py",
+      "language": "python",
+      "sizeLines": 162,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/prompts.py",
+      "language": "python",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/subagents/database_query_agent.py",
+      "language": "python",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/subagents/network_search_agent.py",
+      "language": "python",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "api/server.py",
+      "language": "python",
+      "sizeLines": 241,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/db_tools.py",
+      "language": "python",
+      "sizeLines": 212,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/tavily_tool.py",
+      "language": "python",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "agent/llm.py": [],
+    "agent/main_agent.py": [
+      "agent/llm.py",
+      "agent/prompts.py",
+      "agent/subagents/database_query_agent.py",
+      "agent/subagents/knowledge_base_agent.py",
+      "agent/subagents/network_search_agent.py",
+      "api/context.py",
+      "api/monitor.py",
+      "tools/markdown_tools.py",
+      "tools/pdf_tools.py",
+      "tools/upload_file_read_tool.py"
+    ],
+    "agent/prompts.py": [],
+    "agent/subagents/database_query_agent.py": [
+      "agent/prompts.py",
+      "tools/db_tools.py"
+    ],
+    "agent/subagents/network_search_agent.py": [
+      "agent/prompts.py",
+      "tools/tavily_tool.py"
+    ],
+    "api/server.py": [
+      "agent/main_agent.py",
+      "api/monitor.py"
+    ],
+    "tools/db_tools.py": [
+      "api/monitor.py"
+    ],
+    "tools/tavily_tool.py": [
+      "api/monitor.py"
+    ]
+  },
+  "neighborMap": {
+    "agent/main_agent.py": [
+      {
+        "path": "agent/subagents/knowledge_base_agent.py",
+        "batchIndex": 3,
+        "symbols": []
+      },
+      {
+        "path": "api/context.py",
+        "batchIndex": 2,
+        "symbols": [
+          "set_session_context",
+          "get_session_context",
+          "set_thread_context",
+          "get_thread_context",
+          "reset_session_context"
+        ]
+      },
+      {
+        "path": "api/monitor.py",
+        "batchIndex": 2,
+        "symbols": [
+          "ToolMonitor",
+          "ConnectionManager"
+        ]
+      },
+      {
+        "path": "tools/markdown_tools.py",
+        "batchIndex": 2,
+        "symbols": [
+          "generate_markdown"
+        ]
+      },
+      {
+        "path": "tools/pdf_tools.py",
+        "batchIndex": 2,
+        "symbols": [
+          "convert_md_to_pdf"
+        ]
+      },
+      {
+        "path": "tools/upload_file_read_tool.py",
+        "batchIndex": 2,
+        "symbols": [
+          "read_file_content"
+        ]
+      }
+    ],
+    "agent/prompts.py": [
+      {
+        "path": "agent/subagents/knowledge_base_agent.py",
+        "batchIndex": 3,
+        "symbols": []
+      }
+    ],
+    "api/server.py": [
+      {
+        "path": "api/monitor.py",
+        "batchIndex": 2,
+        "symbols": [
+          "ToolMonitor",
+          "ConnectionManager"
+        ]
+      }
+    ],
+    "tools/db_tools.py": [
+      {
+        "path": "api/monitor.py",
+        "batchIndex": 2,
+        "symbols": [
+          "ToolMonitor",
+          "ConnectionManager"
+        ]
+      }
+    ],
+    "tools/tavily_tool.py": [
+      {
+        "path": "api/monitor.py",
+        "batchIndex": 2,
+        "symbols": [
+          "ToolMonitor",
+          "ConnectionManager"
+        ]
+      }
+    ]
+  }
+}

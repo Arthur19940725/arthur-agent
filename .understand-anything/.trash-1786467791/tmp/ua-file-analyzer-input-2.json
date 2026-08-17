@@ -1,0 +1,156 @@
+{
+  "projectRoot": "D:\\code\\deep-search-pro",
+  "batchFiles": [
+    {
+      "path": "api/context.py",
+      "language": "python",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "api/monitor.py",
+      "language": "python",
+      "sizeLines": 156,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/markdown_tools.py",
+      "language": "python",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/pdf_tools.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/upload_file_read_tool.py",
+      "language": "python",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/path_utils.py",
+      "language": "python",
+      "sizeLines": 112,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/word_converter.py",
+      "language": "python",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "api/context.py": [],
+    "api/monitor.py": [
+      "api/context.py"
+    ],
+    "tools/markdown_tools.py": [
+      "api/context.py",
+      "api/monitor.py",
+      "utils/path_utils.py"
+    ],
+    "tools/pdf_tools.py": [
+      "api/context.py",
+      "api/monitor.py",
+      "utils/path_utils.py",
+      "utils/word_converter.py"
+    ],
+    "tools/upload_file_read_tool.py": [
+      "api/context.py",
+      "api/monitor.py",
+      "utils/path_utils.py"
+    ],
+    "utils/path_utils.py": [],
+    "utils/word_converter.py": []
+  },
+  "neighborMap": {
+    "api/context.py": [
+      {
+        "path": "agent/main_agent.py",
+        "batchIndex": 1,
+        "symbols": [
+          "run_deep_agent"
+        ]
+      }
+    ],
+    "api/monitor.py": [
+      {
+        "path": "agent/main_agent.py",
+        "batchIndex": 1,
+        "symbols": [
+          "run_deep_agent"
+        ]
+      },
+      {
+        "path": "api/server.py",
+        "batchIndex": 1,
+        "symbols": [
+          "TaskRequest",
+          "startup_event",
+          "run_task",
+          "upload_files",
+          "download_file",
+          "list_files",
+          "websocket_endpoint"
+        ]
+      },
+      {
+        "path": "tools/db_tools.py",
+        "batchIndex": 1,
+        "symbols": [
+          "get_db_config",
+          "list_sql_tables",
+          "get_table_data",
+          "execute_sql_query"
+        ]
+      },
+      {
+        "path": "tools/ragflow_tools.py",
+        "batchIndex": 3,
+        "symbols": [
+          "get_assistant_list",
+          "create_ask_delete"
+        ]
+      },
+      {
+        "path": "tools/tavily_tool.py",
+        "batchIndex": 1,
+        "symbols": [
+          "internet_search"
+        ]
+      }
+    ],
+    "tools/markdown_tools.py": [
+      {
+        "path": "agent/main_agent.py",
+        "batchIndex": 1,
+        "symbols": [
+          "run_deep_agent"
+        ]
+      }
+    ],
+    "tools/pdf_tools.py": [
+      {
+        "path": "agent/main_agent.py",
+        "batchIndex": 1,
+        "symbols": [
+          "run_deep_agent"
+        ]
+      }
+    ],
+    "tools/upload_file_read_tool.py": [
+      {
+        "path": "agent/main_agent.py",
+        "batchIndex": 1,
+        "symbols": [
+          "run_deep_agent"
+        ]
+      }
+    ]
+  }
+}

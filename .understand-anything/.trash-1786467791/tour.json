@@ -1,0 +1,95 @@
+[
+  {
+    "order": 1,
+    "title": "项目全景",
+    "description": "先从 README 建立 Deep Search Pro 的整体心智模型：这是一个用小型完整项目讲解 Orchestrator 多智能体协作的学习工程。文档给出了从 API 请求、主智能体调度、专业工具执行到 Markdown/PDF 产出的阅读地图，为后续逐层进入代码提供坐标。",
+    "nodeIds": [
+      "document:README.md"
+    ]
+  },
+  {
+    "order": 2,
+    "title": "服务入口",
+    "description": "沿着 README 的数据流进入 api/server.py，它是实际运行入口，也是 HTTP、文件接口与 WebSocket 会合的地方。FastAPI 接收任务后在后台启动智能体执行，并按 thread_id 管理实时连接，因此这里最适合观察一次请求如何进入系统。服务启动时还会把事件循环交给连接管理器，为后面的跨模块进度推送做好准备。",
+    "nodeIds": [
+      "file:api/server.py"
+    ],
+    "languageLesson": "Python 的 async/await 让 HTTP 后台任务和 WebSocket 长连接在同一事件循环中协作；FastAPI decorator 则把普通异步函数声明为路由或生命周期处理器。"
+  },
+  {
+    "order": 3,
+    "title": "编排与事件",
+    "description": "从服务入口继续到主编排器：main_agent.py 组装主智能体、三个专业子智能体和文件工具，并负责按会话流式执行任务。monitor.py 是被依赖最多的文件，它把智能体与工具事件统一送往 WebSocket、脚本流或控制台。两者共同形成“执行逻辑与可观测事件分离”的主干，让前端能看到长任务的实时进展。",
+    "nodeIds": [
+      "file:agent/main_agent.py",
+      "file:api/monitor.py"
+    ],
+    "languageLesson": "async/await 适合等待模型、网络和数据库等 I/O；将执行事件集中转发，可以避免每个工具各自处理 WebSocket 连接。"
+  },
+  {
+    "order": 4,
+    "title": "模型与提示词",
+    "description": "编排器的行为由模型初始化、YAML 提示词和环境配置共同决定：llm.py 创建共享聊天模型，prompts.py 加载并拆分主智能体与子智能体配置。prompts.yml 明确工具路由、检索步骤和文档生成顺序，.env.example 与 requirements.txt 则说明外部服务参数和精确依赖版本。读完这一站，就能区分代码中的稳定机制与配置中的可调整策略。",
+    "nodeIds": [
+      "file:agent/llm.py",
+      "file:agent/prompts.py",
+      "config:prompt/prompts.yml",
+      "config:.env.example",
+      "document:requirements.txt"
+    ],
+    "languageLesson": "YAML 适合表达分层的 system prompt 配置，但缩进本身就是语法；Python 模块在首次 import 时执行顶层初始化，因此共享模型和提示词的创建时机会影响所有导入方。"
+  },
+  {
+    "order": 5,
+    "title": "会话与路径隔离",
+    "description": "有了执行和配置基础后，再看并发任务如何避免互相污染：context.py 用 ContextVar 保存当前 thread ID 与会话目录。path_utils.py 把不同平台和虚拟前缀的路径统一解析到该会话范围内，upload_file_read_tool.py 再在这个边界内读取多种上传文件。三者一起承担隔离与路径安全责任，是多用户异步服务能够可靠运行的底座。",
+    "nodeIds": [
+      "file:api/context.py",
+      "file:utils/path_utils.py",
+      "file:tools/upload_file_read_tool.py"
+    ],
+    "languageLesson": "ContextVar 会随异步任务传播上下文，却不会像普通全局变量那样让并发请求共享同一份可变状态；使用 token 重置上下文可避免请求结束后的状态泄漏。"
+  },
+  {
+    "order": 6,
+    "title": "三个专业子智能体",
+    "description": "在安全的会话边界内，主智能体把不同信息源交给网络搜索、数据库查询和知识库三个专业子智能体。每个模块从同一套提示词配置取得角色描述，再只注册与自身职责相符的工具。这个分工展示了 Orchestrator 模式的核心：主智能体负责路由与综合，子智能体负责受限领域内的执行。",
+    "nodeIds": [
+      "file:agent/subagents/network_search_agent.py",
+      "file:agent/subagents/database_query_agent.py",
+      "file:agent/subagents/knowledge_base_agent.py"
+    ]
+  },
+  {
+    "order": 7,
+    "title": "外部检索工具",
+    "description": "三个子智能体最终通过工具模块访问真实数据源：tavily_tool.py 负责网络搜索，db_tools.py 负责 MySQL 表发现、预览与查询，ragflow_tools.py 负责 RAGFlow 助手发现和问答。rag_config.py 补充 RAGFlow 的连接配置来源，而各工具都会把调用进度交回前面的监控层。由此可以完整追踪“主智能体决策—子智能体执行—工具访问外部系统—事件回传”的闭环。",
+    "nodeIds": [
+      "file:tools/tavily_tool.py",
+      "file:tools/db_tools.py",
+      "file:tools/ragflow_tools.py",
+      "file:rawflow/rag_config.py"
+    ],
+    "languageLesson": "LangChain 的 @tool decorator 会把 Python 函数包装成模型可调用工具；清晰的参数、返回文本和错误信息共同构成模型与外部系统之间的接口契约。"
+  },
+  {
+    "order": 8,
+    "title": "报告生成链路",
+    "description": "检索结果汇总后，markdown_tools.py 在会话目录内生成 Markdown，pdf_tools.py 校验输入与输出路径后触发 PDF 转换。word_converter.py 完成 Markdown 到临时 HTML、再由 Word COM 导出 PDF 的平台相关工作，并负责释放资源。这个分层把智能体可调用接口、路径安全和底层格式转换拆开，使报告产出既可监控又便于定位故障。",
+    "nodeIds": [
+      "file:tools/markdown_tools.py",
+      "file:tools/pdf_tools.py",
+      "file:utils/word_converter.py"
+    ],
+    "languageLesson": "Python 的 try/finally 用于保证 Word 进程、临时文件和 COM 资源即使在转换失败时也能清理，是外部资源管理的重要模式。"
+  },
+  {
+    "order": 9,
+    "title": "RAGFlow 实践入口",
+    "description": "最后用两个独立示例把知识库集成拆成可观察的小实验：knowledge_demo.py 演示创建知识库并上传本地文档，chat_assistant_demo.py 演示枚举助手、建立临时会话和流式问答。它们与正式工具链分开，适合在理解主系统后验证 RAGFlow SDK 的原始能力。完成这一步，就能从底层示例反向解释第 7 步的工具封装为何存在。",
+    "nodeIds": [
+      "file:rawflow/knowledge_demo.py",
+      "file:rawflow/chat_assistant_demo.py"
+    ]
+  }
+]

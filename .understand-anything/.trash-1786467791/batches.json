@@ -1,0 +1,548 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "louvain",
+  "totalFiles": 26,
+  "totalBatches": 5,
+  "exportsByPath": {
+    ".understand-anything/.understandignore": [],
+    "agent/llm.py": [],
+    "agent/main_agent.py": [
+      "run_deep_agent"
+    ],
+    "agent/prompts.py": [
+      "load_yaml"
+    ],
+    "agent/subagents/database_query_agent.py": [],
+    "agent/subagents/knowledge_base_agent.py": [],
+    "agent/subagents/network_search_agent.py": [],
+    "api/context.py": [
+      "set_session_context",
+      "get_session_context",
+      "set_thread_context",
+      "get_thread_context",
+      "reset_session_context"
+    ],
+    "api/monitor.py": [
+      "ToolMonitor",
+      "ConnectionManager"
+    ],
+    "api/server.py": [
+      "TaskRequest",
+      "startup_event",
+      "run_task",
+      "upload_files",
+      "download_file",
+      "list_files",
+      "websocket_endpoint"
+    ],
+    "rawflow/chat_assistant_demo.py": [
+      "get_assistant_list",
+      "ask_question"
+    ],
+    "rawflow/knowledge_demo.py": [
+      "create_knowledge_base",
+      "upload_file_to_knowledge_base"
+    ],
+    "rawflow/rag_config.py": [
+      "_load_ragflow_env"
+    ],
+    "tools/db_tools.py": [
+      "get_db_config",
+      "list_sql_tables",
+      "get_table_data",
+      "execute_sql_query"
+    ],
+    "tools/markdown_tools.py": [
+      "generate_markdown"
+    ],
+    "tools/pdf_tools.py": [
+      "convert_md_to_pdf"
+    ],
+    "tools/ragflow_tools.py": [
+      "get_assistant_list",
+      "create_ask_delete"
+    ],
+    "tools/tavily_tool.py": [
+      "internet_search"
+    ],
+    "tools/upload_file_read_tool.py": [
+      "read_file_content"
+    ],
+    "utils/path_utils.py": [
+      "resolve_path",
+      "resolve_path"
+    ],
+    "utils/word_converter.py": [
+      "convert_md_to_pdf_via_word"
+    ]
+  },
+  "batches": [
+    {
+      "batchIndex": 1,
+      "files": [
+        {
+          "path": "agent/llm.py",
+          "language": "python",
+          "sizeLines": 11,
+          "fileCategory": "code"
+        },
+        {
+          "path": "agent/main_agent.py",
+          "language": "python",
+          "sizeLines": 162,
+          "fileCategory": "code"
+        },
+        {
+          "path": "agent/prompts.py",
+          "language": "python",
+          "sizeLines": 31,
+          "fileCategory": "code"
+        },
+        {
+          "path": "agent/subagents/database_query_agent.py",
+          "language": "python",
+          "sizeLines": 8,
+          "fileCategory": "code"
+        },
+        {
+          "path": "agent/subagents/network_search_agent.py",
+          "language": "python",
+          "sizeLines": 11,
+          "fileCategory": "code"
+        },
+        {
+          "path": "api/server.py",
+          "language": "python",
+          "sizeLines": 241,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tools/db_tools.py",
+          "language": "python",
+          "sizeLines": 212,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tools/tavily_tool.py",
+          "language": "python",
+          "sizeLines": 64,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "agent/llm.py": [],
+        "agent/main_agent.py": [
+          "agent/llm.py",
+          "agent/prompts.py",
+          "agent/subagents/database_query_agent.py",
+          "agent/subagents/knowledge_base_agent.py",
+          "agent/subagents/network_search_agent.py",
+          "api/context.py",
+          "api/monitor.py",
+          "tools/markdown_tools.py",
+          "tools/pdf_tools.py",
+          "tools/upload_file_read_tool.py"
+        ],
+        "agent/prompts.py": [],
+        "agent/subagents/database_query_agent.py": [
+          "agent/prompts.py",
+          "tools/db_tools.py"
+        ],
+        "agent/subagents/network_search_agent.py": [
+          "agent/prompts.py",
+          "tools/tavily_tool.py"
+        ],
+        "api/server.py": [
+          "agent/main_agent.py",
+          "api/monitor.py"
+        ],
+        "tools/db_tools.py": [
+          "api/monitor.py"
+        ],
+        "tools/tavily_tool.py": [
+          "api/monitor.py"
+        ]
+      },
+      "neighborMap": {
+        "agent/main_agent.py": [
+          {
+            "path": "agent/subagents/knowledge_base_agent.py",
+            "batchIndex": 3,
+            "symbols": []
+          },
+          {
+            "path": "api/context.py",
+            "batchIndex": 2,
+            "symbols": [
+              "set_session_context",
+              "get_session_context",
+              "set_thread_context",
+              "get_thread_context",
+              "reset_session_context"
+            ]
+          },
+          {
+            "path": "api/monitor.py",
+            "batchIndex": 2,
+            "symbols": [
+              "ToolMonitor",
+              "ConnectionManager"
+            ]
+          },
+          {
+            "path": "tools/markdown_tools.py",
+            "batchIndex": 2,
+            "symbols": [
+              "generate_markdown"
+            ]
+          },
+          {
+            "path": "tools/pdf_tools.py",
+            "batchIndex": 2,
+            "symbols": [
+              "convert_md_to_pdf"
+            ]
+          },
+          {
+            "path": "tools/upload_file_read_tool.py",
+            "batchIndex": 2,
+            "symbols": [
+              "read_file_content"
+            ]
+          }
+        ],
+        "agent/prompts.py": [
+          {
+            "path": "agent/subagents/knowledge_base_agent.py",
+            "batchIndex": 3,
+            "symbols": []
+          }
+        ],
+        "api/server.py": [
+          {
+            "path": "api/monitor.py",
+            "batchIndex": 2,
+            "symbols": [
+              "ToolMonitor",
+              "ConnectionManager"
+            ]
+          }
+        ],
+        "tools/db_tools.py": [
+          {
+            "path": "api/monitor.py",
+            "batchIndex": 2,
+            "symbols": [
+              "ToolMonitor",
+              "ConnectionManager"
+            ]
+          }
+        ],
+        "tools/tavily_tool.py": [
+          {
+            "path": "api/monitor.py",
+            "batchIndex": 2,
+            "symbols": [
+              "ToolMonitor",
+              "ConnectionManager"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 2,
+      "files": [
+        {
+          "path": "api/context.py",
+          "language": "python",
+          "sizeLines": 79,
+          "fileCategory": "code"
+        },
+        {
+          "path": "api/monitor.py",
+          "language": "python",
+          "sizeLines": 156,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tools/markdown_tools.py",
+          "language": "python",
+          "sizeLines": 86,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tools/pdf_tools.py",
+          "language": "python",
+          "sizeLines": 62,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tools/upload_file_read_tool.py",
+          "language": "python",
+          "sizeLines": 129,
+          "fileCategory": "code"
+        },
+        {
+          "path": "utils/path_utils.py",
+          "language": "python",
+          "sizeLines": 112,
+          "fileCategory": "code"
+        },
+        {
+          "path": "utils/word_converter.py",
+          "language": "python",
+          "sizeLines": 86,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "api/context.py": [],
+        "api/monitor.py": [
+          "api/context.py"
+        ],
+        "tools/markdown_tools.py": [
+          "api/context.py",
+          "api/monitor.py",
+          "utils/path_utils.py"
+        ],
+        "tools/pdf_tools.py": [
+          "api/context.py",
+          "api/monitor.py",
+          "utils/path_utils.py",
+          "utils/word_converter.py"
+        ],
+        "tools/upload_file_read_tool.py": [
+          "api/context.py",
+          "api/monitor.py",
+          "utils/path_utils.py"
+        ],
+        "utils/path_utils.py": [],
+        "utils/word_converter.py": []
+      },
+      "neighborMap": {
+        "api/context.py": [
+          {
+            "path": "agent/main_agent.py",
+            "batchIndex": 1,
+            "symbols": [
+              "run_deep_agent"
+            ]
+          }
+        ],
+        "api/monitor.py": [
+          {
+            "path": "agent/main_agent.py",
+            "batchIndex": 1,
+            "symbols": [
+              "run_deep_agent"
+            ]
+          },
+          {
+            "path": "api/server.py",
+            "batchIndex": 1,
+            "symbols": [
+              "TaskRequest",
+              "startup_event",
+              "run_task",
+              "upload_files",
+              "download_file",
+              "list_files",
+              "websocket_endpoint"
+            ]
+          },
+          {
+            "path": "tools/db_tools.py",
+            "batchIndex": 1,
+            "symbols": [
+              "get_db_config",
+              "list_sql_tables",
+              "get_table_data",
+              "execute_sql_query"
+            ]
+          },
+          {
+            "path": "tools/ragflow_tools.py",
+            "batchIndex": 3,
+            "symbols": [
+              "get_assistant_list",
+              "create_ask_delete"
+            ]
+          },
+          {
+            "path": "tools/tavily_tool.py",
+            "batchIndex": 1,
+            "symbols": [
+              "internet_search"
+            ]
+          }
+        ],
+        "tools/markdown_tools.py": [
+          {
+            "path": "agent/main_agent.py",
+            "batchIndex": 1,
+            "symbols": [
+              "run_deep_agent"
+            ]
+          }
+        ],
+        "tools/pdf_tools.py": [
+          {
+            "path": "agent/main_agent.py",
+            "batchIndex": 1,
+            "symbols": [
+              "run_deep_agent"
+            ]
+          }
+        ],
+        "tools/upload_file_read_tool.py": [
+          {
+            "path": "agent/main_agent.py",
+            "batchIndex": 1,
+            "symbols": [
+              "run_deep_agent"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 3,
+      "files": [
+        {
+          "path": "agent/subagents/knowledge_base_agent.py",
+          "language": "python",
+          "sizeLines": 8,
+          "fileCategory": "code"
+        },
+        {
+          "path": "rawflow/chat_assistant_demo.py",
+          "language": "python",
+          "sizeLines": 70,
+          "fileCategory": "code"
+        },
+        {
+          "path": "rawflow/knowledge_demo.py",
+          "language": "python",
+          "sizeLines": 50,
+          "fileCategory": "code"
+        },
+        {
+          "path": "rawflow/rag_config.py",
+          "language": "python",
+          "sizeLines": 19,
+          "fileCategory": "code"
+        },
+        {
+          "path": "tools/ragflow_tools.py",
+          "language": "python",
+          "sizeLines": 95,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "agent/subagents/knowledge_base_agent.py": [
+          "agent/prompts.py",
+          "tools/ragflow_tools.py"
+        ],
+        "rawflow/chat_assistant_demo.py": [
+          "rawflow/rag_config.py"
+        ],
+        "rawflow/knowledge_demo.py": [
+          "rawflow/rag_config.py"
+        ],
+        "rawflow/rag_config.py": [],
+        "tools/ragflow_tools.py": [
+          "api/monitor.py",
+          "rawflow/rag_config.py"
+        ]
+      },
+      "neighborMap": {
+        "agent/subagents/knowledge_base_agent.py": [
+          {
+            "path": "agent/prompts.py",
+            "batchIndex": 1,
+            "symbols": [
+              "load_yaml"
+            ]
+          },
+          {
+            "path": "agent/main_agent.py",
+            "batchIndex": 1,
+            "symbols": [
+              "run_deep_agent"
+            ]
+          }
+        ],
+        "tools/ragflow_tools.py": [
+          {
+            "path": "api/monitor.py",
+            "batchIndex": 2,
+            "symbols": [
+              "ToolMonitor",
+              "ConnectionManager"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 4,
+      "files": [
+        {
+          "path": ".env.example",
+          "language": "config",
+          "sizeLines": 29,
+          "fileCategory": "config"
+        },
+        {
+          "path": "README.md",
+          "language": "markdown",
+          "sizeLines": 259,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "requirements.txt",
+          "language": "txt",
+          "sizeLines": 134,
+          "fileCategory": "docs"
+        }
+      ],
+      "batchImportData": {
+        ".env.example": [],
+        "README.md": [],
+        "requirements.txt": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 5,
+      "files": [
+        {
+          "path": ".understand-anything/.understandignore",
+          "language": "unknown",
+          "sizeLines": 29,
+          "fileCategory": "code"
+        },
+        {
+          "path": ".understand-anything/config.json",
+          "language": "json",
+          "sizeLines": 3,
+          "fileCategory": "config"
+        },
+        {
+          "path": "prompt/prompts.yml",
+          "language": "yaml",
+          "sizeLines": 73,
+          "fileCategory": "config"
+        }
+      ],
+      "batchImportData": {
+        ".understand-anything/.understandignore": [],
+        ".understand-anything/config.json": [],
+        "prompt/prompts.yml": []
+      },
+      "neighborMap": {}
+    }
+  ]
+}

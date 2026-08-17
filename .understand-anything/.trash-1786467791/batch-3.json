@@ -1,0 +1,263 @@
+{
+  "nodes": [
+    {
+      "id": "file:agent/subagents/knowledge_base_agent.py",
+      "type": "file",
+      "name": "knowledge_base_agent.py",
+      "filePath": "agent/subagents/knowledge_base_agent.py",
+      "summary": "根据 YAML 提示词配置组装知识库子智能体描述，并注册 RAGFlow 助手发现与问答工具，供主智能体协作调用。",
+      "tags": ["subagent", "ragflow", "configuration", "tool-registration"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:rawflow/chat_assistant_demo.py",
+      "type": "file",
+      "name": "chat_assistant_demo.py",
+      "filePath": "rawflow/chat_assistant_demo.py",
+      "summary": "演示通过 RAGFlow SDK 枚举聊天助手及其知识库，并以临时会话执行一次流式问答后清理会话。",
+      "tags": ["ragflow", "demo", "knowledge-retrieval", "session-management"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:rawflow/chat_assistant_demo.py:get_assistant_list",
+      "type": "function",
+      "name": "get_assistant_list",
+      "filePath": "rawflow/chat_assistant_demo.py",
+      "lineRange": [13, 32],
+      "summary": "查询全部 RAGFlow 聊天助手，汇总各助手关联的知识库名称并返回便于阅读的文本。",
+      "tags": ["ragflow", "assistant-discovery", "knowledge-base", "formatting"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:rawflow/chat_assistant_demo.py:ask_question",
+      "type": "function",
+      "name": "ask_question",
+      "filePath": "rawflow/chat_assistant_demo.py",
+      "lineRange": [35, 67],
+      "summary": "按名称选取聊天助手，创建临时会话消费流式回答，并在返回最终内容前删除该会话。",
+      "tags": ["ragflow", "question-answering", "streaming", "session-management"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:rawflow/knowledge_demo.py",
+      "type": "file",
+      "name": "knowledge_demo.py",
+      "filePath": "rawflow/knowledge_demo.py",
+      "summary": "演示使用 RAGFlow SDK 创建知识库，并将多个本地文件读取为二进制文档后上传到指定知识库。",
+      "tags": ["ragflow", "demo", "knowledge-base", "file-upload"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:rawflow/knowledge_demo.py:create_knowledge_base",
+      "type": "function",
+      "name": "create_knowledge_base",
+      "filePath": "rawflow/knowledge_demo.py",
+      "lineRange": [13, 22],
+      "summary": "使用给定名称和描述创建采用通义千问 embedding 模型的 RAGFlow 知识库，并输出创建结果。",
+      "tags": ["ragflow", "knowledge-base", "dataset-creation", "embedding"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:rawflow/knowledge_demo.py:upload_file_to_knowledge_base",
+      "type": "function",
+      "name": "upload_file_to_knowledge_base",
+      "filePath": "rawflow/knowledge_demo.py",
+      "lineRange": [30, 51],
+      "summary": "按知识库 ID 获取数据集，将本地文件读取并封装为文档对象后批量上传。",
+      "tags": ["ragflow", "file-upload", "binary-io", "document-ingestion"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:rawflow/rag_config.py",
+      "type": "file",
+      "name": "rag_config.py",
+      "filePath": "rawflow/rag_config.py",
+      "summary": "集中加载 RAGFlow 连接配置，优先读取模块目录下的 `.env`，否则采用 dotenv 默认搜索与系统环境变量。",
+      "tags": ["configuration", "environment-variables", "ragflow", "dotenv"],
+      "complexity": "simple",
+      "languageNotes": "使用 Optional 类型标注显式表示缺失环境变量时可能返回 None。"
+    },
+    {
+      "id": "function:rawflow/rag_config.py:_load_ragflow_env",
+      "type": "function",
+      "name": "_load_ragflow_env",
+      "filePath": "rawflow/rag_config.py",
+      "lineRange": [5, 20],
+      "summary": "加载 dotenv 配置并读取 RAGFLOW_API_KEY 与 RAGFLOW_API_URL，返回两个可空字符串。",
+      "tags": ["configuration", "environment-variables", "ragflow", "dotenv"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tools/ragflow_tools.py",
+      "type": "file",
+      "name": "ragflow_tools.py",
+      "filePath": "tools/ragflow_tools.py",
+      "summary": "将 RAGFlow 助手发现和临时会话问答封装为 LangChain 工具，同时上报工具调用进度并把异常转为模型可消费的文本。",
+      "tags": ["langchain-tool", "ragflow", "monitoring", "knowledge-retrieval", "error-handling"],
+      "complexity": "moderate",
+      "languageNotes": "通过 @tool 装饰同步 Python 函数，使其作为带文档说明的 LangChain 工具暴露给智能体。"
+    },
+    {
+      "id": "function:tools/ragflow_tools.py:get_assistant_list",
+      "type": "function",
+      "name": "get_assistant_list",
+      "filePath": "tools/ragflow_tools.py",
+      "lineRange": [18, 54],
+      "summary": "上报工具调用后查询 RAGFlow 助手及关联知识库，并以稳定的文本结果表达成功、空列表或异常状态。",
+      "tags": ["langchain-tool", "ragflow", "assistant-discovery", "monitoring", "error-handling"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tools/ragflow_tools.py:create_ask_delete",
+      "type": "function",
+      "name": "create_ask_delete",
+      "filePath": "tools/ragflow_tools.py",
+      "lineRange": [58, 92],
+      "summary": "上报问答工具参数，创建临时 RAGFlow 会话消费流式响应，并在删除会话后返回最终内容或错误文本。",
+      "tags": ["langchain-tool", "ragflow", "question-answering", "session-management", "error-handling"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/subagents/knowledge_base_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/knowledge_base_agent.py",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "function:rawflow/chat_assistant_demo.py:get_assistant_list",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "function:rawflow/chat_assistant_demo.py:ask_question",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "function:rawflow/knowledge_demo.py:create_knowledge_base",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "function:rawflow/knowledge_demo.py:upload_file_to_knowledge_base",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/rag_config.py",
+      "target": "function:rawflow/rag_config.py:_load_ragflow_env",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "function:tools/ragflow_tools.py:get_assistant_list",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "function:tools/ragflow_tools.py:create_ask_delete",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "function:rawflow/chat_assistant_demo.py:get_assistant_list",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "function:rawflow/chat_assistant_demo.py:ask_question",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "function:rawflow/knowledge_demo.py:create_knowledge_base",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "function:rawflow/knowledge_demo.py:upload_file_to_knowledge_base",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:rawflow/rag_config.py",
+      "target": "function:rawflow/rag_config.py:_load_ragflow_env",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "function:tools/ragflow_tools.py:get_assistant_list",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "function:tools/ragflow_tools.py:create_ask_delete",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

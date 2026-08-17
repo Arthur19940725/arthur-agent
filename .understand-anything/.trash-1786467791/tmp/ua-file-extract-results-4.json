@@ -1,0 +1,246 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".env.example",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 29,
+      "nonEmptyLines": 24,
+      "definitions": [
+        {
+          "name": "RAGFLOW_API_URL",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 7,
+          "endLine": 7
+        },
+        {
+          "name": "RAGFLOW_API_KEY",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 8,
+          "endLine": 8
+        },
+        {
+          "name": "OPENAI_BASE_URL",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 12,
+          "endLine": 12
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 13,
+          "endLine": 13
+        },
+        {
+          "name": "LLM_QWEN3",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 17,
+          "endLine": 17
+        },
+        {
+          "name": "LLM_QWEN_MAX",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 18,
+          "endLine": 18
+        },
+        {
+          "name": "TAVILY_API_KEY",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 22,
+          "endLine": 22
+        },
+        {
+          "name": "MYSQL_USER",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 25,
+          "endLine": 25
+        },
+        {
+          "name": "MYSQL_PASSWORD",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 26,
+          "endLine": 26
+        },
+        {
+          "name": "MYSQL_DATABASE",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 27,
+          "endLine": 27
+        },
+        {
+          "name": "MYSQL_HOST",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 28,
+          "endLine": 28
+        },
+        {
+          "name": "MYSQL_PORT",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 29,
+          "endLine": 29
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 12
+      }
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 259,
+      "nonEmptyLines": 194,
+      "sections": [
+        {
+          "heading": "🎯 这个项目是什么",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "🧠 你能从这个项目中学到什么",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "🏗️ 架构一览",
+          "level": 2,
+          "line": 44
+        },
+        {
+          "heading": "数据流说明",
+          "level": 3,
+          "line": 70
+        },
+        {
+          "heading": "🚀 5 分钟跑起来",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "环境要求",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "第一步：克隆 + 装依赖",
+          "level": 3,
+          "line": 90
+        },
+        {
+          "heading": "第二步：配环境变量",
+          "level": 3,
+          "line": 98
+        },
+        {
+          "heading": "第三步：启动",
+          "level": 3,
+          "line": 120
+        },
+        {
+          "heading": "第四步：试一试",
+          "level": 3,
+          "line": 128
+        },
+        {
+          "heading": "📖 推荐阅读顺序",
+          "level": 2,
+          "line": 140
+        },
+        {
+          "heading": "📁 项目文件速查",
+          "level": 2,
+          "line": 158
+        },
+        {
+          "heading": "🧪 练手建议：你可以这样改造",
+          "level": 2,
+          "line": 197
+        },
+        {
+          "heading": "入门级（加深理解）",
+          "level": 3,
+          "line": 201
+        },
+        {
+          "heading": "进阶级（工程能力）",
+          "level": 3,
+          "line": 207
+        },
+        {
+          "heading": "挑战级（深入学习）",
+          "level": 3,
+          "line": 214
+        },
+        {
+          "heading": "🔧 技术栈",
+          "level": 2,
+          "line": 223
+        },
+        {
+          "heading": "❓ FAQ",
+          "level": 2,
+          "line": 237
+        },
+        {
+          "heading": "Q: 为什么选 deepagents 而不是自己写编排逻辑？",
+          "level": 3,
+          "line": 239
+        },
+        {
+          "heading": "Q: 没有 RAGFlow 和 MySQL，项目还能跑吗?",
+          "level": 3,
+          "line": 243
+        },
+        {
+          "heading": "Q: 为什么用 ContextVar 而不是全局变量？",
+          "level": 3,
+          "line": 247
+        },
+        {
+          "heading": "Q: 项目为什么不到 1000 行？",
+          "level": 3,
+          "line": 251
+        },
+        {
+          "heading": "📄 License",
+          "level": 2,
+          "line": 257
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 23
+      }
+    },
+    {
+      "path": "requirements.txt",
+      "language": "txt",
+      "fileCategory": "docs",
+      "totalLines": 135,
+      "nonEmptyLines": 135,
+      "metrics": {}
+    }
+  ]
+}
