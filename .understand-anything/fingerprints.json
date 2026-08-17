@@ -1,0 +1,1272 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "0ccc05826664cb2cd8d65608c1f2ebea1fdbfa30",
+  "generatedAt": "2026-08-11T17:02:34.876Z",
+  "files": {
+    ".env.example": {
+      "filePath": ".env.example",
+      "contentHash": "a25aa03b372fed237145aef7533693181dafa64375567afcfd49e823c44935c3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 30,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/.understandignore": {
+      "filePath": ".understand-anything/.understandignore",
+      "contentHash": "dd096ce0c3ad7bb274e64c2a7f9d397b0c9152b00f5a7d27f670ae177315b406",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 30,
+      "hasStructuralAnalysis": false
+    },
+    ".understand-anything/config.json": {
+      "filePath": ".understand-anything/config.json",
+      "contentHash": "5d2ff006cff22c68edd4776249d562ea8c73915a61c6214eb85933865a9402e7",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 4,
+      "hasStructuralAnalysis": true
+    },
+    "agent/llm.py": {
+      "filePath": "agent/llm.py",
+      "contentHash": "23e433582305c25111eb7b0d81c1965b0378fa72df8aa609b95be4a2ae5d69c0",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "dotenv",
+          "specifiers": [
+            "load_dotenv",
+            "find_dotenv"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "langchain.chat_models",
+          "specifiers": [
+            "init_chat_model"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 12,
+      "hasStructuralAnalysis": true
+    },
+    "agent/main_agent.py": {
+      "filePath": "agent/main_agent.py",
+      "contentHash": "ffeb91250e3e6e5f52712b7ac128eefbaa326c76ab5d8d733ecddd015ce373e2",
+      "functions": [
+        {
+          "name": "run_deep_agent",
+          "params": [
+            "task_query",
+            "session_id"
+          ],
+          "exported": true,
+          "lineCount": 106
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "agent.subagents.knowledge_base_agent",
+          "specifiers": [
+            "knowledge_base_agent"
+          ]
+        },
+        {
+          "source": "agent.subagents.database_query_agent",
+          "specifiers": [
+            "database_query_agent"
+          ]
+        },
+        {
+          "source": "agent.subagents.network_search_agent",
+          "specifiers": [
+            "network_search_agent"
+          ]
+        },
+        {
+          "source": "langgraph.checkpoint.memory",
+          "specifiers": [
+            "InMemorySaver"
+          ]
+        },
+        {
+          "source": "tools.markdown_tools",
+          "specifiers": [
+            "generate_markdown"
+          ]
+        },
+        {
+          "source": "tools.pdf_tools",
+          "specifiers": [
+            "convert_md_to_pdf"
+          ]
+        },
+        {
+          "source": "tools.upload_file_read_tool",
+          "specifiers": [
+            "read_file_content"
+          ]
+        },
+        {
+          "source": "deepagents",
+          "specifiers": [
+            "create_deep_agent"
+          ]
+        },
+        {
+          "source": "agent.llm",
+          "specifiers": [
+            "model"
+          ]
+        },
+        {
+          "source": "agent.prompts",
+          "specifiers": [
+            "main_agent_content"
+          ]
+        },
+        {
+          "source": "api.monitor",
+          "specifiers": [
+            "monitor"
+          ]
+        },
+        {
+          "source": "asyncio",
+          "specifiers": [
+            "asyncio"
+          ]
+        },
+        {
+          "source": "uuid",
+          "specifiers": [
+            "uuid"
+          ]
+        },
+        {
+          "source": "shutil",
+          "specifiers": [
+            "shutil"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "api.context",
+          "specifiers": [
+            "set_session_context",
+            "reset_session_context",
+            "set_thread_context"
+          ]
+        },
+        {
+          "source": "langchain_core.messages",
+          "specifiers": [
+            "AIMessage"
+          ]
+        }
+      ],
+      "exports": [
+        "run_deep_agent"
+      ],
+      "totalLines": 163,
+      "hasStructuralAnalysis": true
+    },
+    "agent/prompts.py": {
+      "filePath": "agent/prompts.py",
+      "contentHash": "637cd87490383051cfb62098d279c859b02e9dd4db20ae795e59dc0124ac0b4c",
+      "functions": [
+        {
+          "name": "load_yaml",
+          "params": [
+            "file_path"
+          ],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "yaml",
+          "specifiers": [
+            "yaml"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        }
+      ],
+      "exports": [
+        "load_yaml"
+      ],
+      "totalLines": 32,
+      "hasStructuralAnalysis": true
+    },
+    "agent/subagents/database_query_agent.py": {
+      "filePath": "agent/subagents/database_query_agent.py",
+      "contentHash": "6e16b90c94fd55cdb881ff07ba99aaefb7f34be44118878c7be76dee04fc562f",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "agent.prompts",
+          "specifiers": [
+            "sub_agents_content"
+          ]
+        },
+        {
+          "source": "tools.db_tools",
+          "specifiers": [
+            "list_sql_tables",
+            "get_table_data",
+            "execute_sql_query"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": true
+    },
+    "agent/subagents/knowledge_base_agent.py": {
+      "filePath": "agent/subagents/knowledge_base_agent.py",
+      "contentHash": "05553f594c3ab0910ce1ba07d9cc570ce55ab7c5e190b8921d6d30690a37c560",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "agent.prompts",
+          "specifiers": [
+            "sub_agents_content"
+          ]
+        },
+        {
+          "source": "tools.ragflow_tools",
+          "specifiers": [
+            "get_assistant_list",
+            "create_ask_delete"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": true
+    },
+    "agent/subagents/network_search_agent.py": {
+      "filePath": "agent/subagents/network_search_agent.py",
+      "contentHash": "ccad2d818f45899eae2c021098b3256f7040237974fb310947ffbdef31e52a03",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "agent.prompts",
+          "specifiers": [
+            "sub_agents_content"
+          ]
+        },
+        {
+          "source": "tools.tavily_tool",
+          "specifiers": [
+            "internet_search"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 12,
+      "hasStructuralAnalysis": true
+    },
+    "api/context.py": {
+      "filePath": "api/context.py",
+      "contentHash": "d7c86cc019a71d6179bdc4883b2bfc06d5e30732aa276efa20897bb712f68cb4",
+      "functions": [
+        {
+          "name": "set_session_context",
+          "params": [
+            "path"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "get_session_context",
+          "params": [],
+          "returnType": "Optional[str]",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "set_thread_context",
+          "params": [
+            "thread_id"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "get_thread_context",
+          "params": [],
+          "returnType": "Optional[str]",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "reset_session_context",
+          "params": [
+            "session_token",
+            "thread_token"
+          ],
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "contextvars",
+          "specifiers": [
+            "ContextVar"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Optional"
+          ]
+        }
+      ],
+      "exports": [
+        "set_session_context",
+        "get_session_context",
+        "set_thread_context",
+        "get_thread_context",
+        "reset_session_context"
+      ],
+      "totalLines": 80,
+      "hasStructuralAnalysis": true
+    },
+    "api/monitor.py": {
+      "filePath": "api/monitor.py",
+      "contentHash": "b83c69282f811e28f19b43b386d590d209f959b03b0b04a96ef42ce37dba1d8c",
+      "functions": [],
+      "classes": [
+        {
+          "name": "ToolMonitor",
+          "methods": [
+            "__new__",
+            "set_websocket_manager",
+            "_emit",
+            "report_tool",
+            "report_assistant",
+            "report_task_result",
+            "report_session_dir"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 105
+        },
+        {
+          "name": "ConnectionManager",
+          "methods": [
+            "__init__",
+            "set_loop",
+            "connect",
+            "disconnect",
+            "send_personal_message",
+            "send_to_thread"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 30
+        }
+      ],
+      "imports": [
+        {
+          "source": "datetime",
+          "specifiers": [
+            "datetime"
+          ]
+        },
+        {
+          "source": "asyncio",
+          "specifiers": [
+            "asyncio"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Any",
+            "Dict",
+            "Optional"
+          ]
+        },
+        {
+          "source": "fastapi",
+          "specifiers": [
+            "WebSocket"
+          ]
+        },
+        {
+          "source": "api.context",
+          "specifiers": [
+            "get_thread_context"
+          ]
+        }
+      ],
+      "exports": [
+        "ToolMonitor",
+        "ConnectionManager"
+      ],
+      "totalLines": 157,
+      "hasStructuralAnalysis": true
+    },
+    "api/server.py": {
+      "filePath": "api/server.py",
+      "contentHash": "e1b04c19fad46177404337f64132231ff03612f370800ec6e3e04f637c8adc3c",
+      "functions": [
+        {
+          "name": "startup_event",
+          "params": [],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "run_task",
+          "params": [
+            "request"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "upload_files",
+          "params": [
+            "files",
+            "thread_id"
+          ],
+          "exported": true,
+          "lineCount": 29
+        },
+        {
+          "name": "download_file",
+          "params": [
+            "path"
+          ],
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "list_files",
+          "params": [
+            "path"
+          ],
+          "exported": true,
+          "lineCount": 57
+        },
+        {
+          "name": "websocket_endpoint",
+          "params": [
+            "websocket",
+            "thread_id"
+          ],
+          "exported": true,
+          "lineCount": 44
+        }
+      ],
+      "classes": [
+        {
+          "name": "TaskRequest",
+          "methods": [],
+          "properties": [
+            "query",
+            "thread_id"
+          ],
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "imports": [
+        {
+          "source": "uuid",
+          "specifiers": [
+            "uuid"
+          ]
+        },
+        {
+          "source": "asyncio",
+          "specifiers": [
+            "asyncio"
+          ]
+        },
+        {
+          "source": "uvicorn",
+          "specifiers": [
+            "uvicorn"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "fastapi",
+          "specifiers": [
+            "FastAPI",
+            "WebSocket",
+            "WebSocketDisconnect",
+            "UploadFile",
+            "File",
+            "Form"
+          ]
+        },
+        {
+          "source": "fastapi.responses",
+          "specifiers": [
+            "FileResponse"
+          ]
+        },
+        {
+          "source": "fastapi.middleware.cors",
+          "specifiers": [
+            "CORSMiddleware"
+          ]
+        },
+        {
+          "source": "pydantic",
+          "specifiers": [
+            "BaseModel"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "List"
+          ]
+        },
+        {
+          "source": "shutil",
+          "specifiers": [
+            "shutil"
+          ]
+        },
+        {
+          "source": "agent.main_agent",
+          "specifiers": [
+            "run_deep_agent"
+          ]
+        },
+        {
+          "source": "api.monitor",
+          "specifiers": [
+            "manager"
+          ]
+        }
+      ],
+      "exports": [
+        "TaskRequest",
+        "startup_event",
+        "run_task",
+        "upload_files",
+        "download_file",
+        "list_files",
+        "websocket_endpoint"
+      ],
+      "totalLines": 242,
+      "hasStructuralAnalysis": true
+    },
+    "prompt/prompts.yml": {
+      "filePath": "prompt/prompts.yml",
+      "contentHash": "563ea4393e11976d2cef55b67ec0ff699c1f3cca49e1f3fea9e458a317a03d82",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 74,
+      "hasStructuralAnalysis": true
+    },
+    "rawflow/chat_assistant_demo.py": {
+      "filePath": "rawflow/chat_assistant_demo.py",
+      "contentHash": "d8251e713251e31165c06469d1ed963739daccb31d6f2ba48a6f9f77c8cc28c9",
+      "functions": [
+        {
+          "name": "get_assistant_list",
+          "params": [],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "ask_question",
+          "params": [
+            "chat_name",
+            "question"
+          ],
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "ragflow_sdk",
+          "specifiers": [
+            "RAGFlow"
+          ]
+        },
+        {
+          "source": "rawflow.rag_config",
+          "specifiers": [
+            "_load_ragflow_env"
+          ]
+        }
+      ],
+      "exports": [
+        "get_assistant_list",
+        "ask_question"
+      ],
+      "totalLines": 71,
+      "hasStructuralAnalysis": true
+    },
+    "rawflow/knowledge_demo.py": {
+      "filePath": "rawflow/knowledge_demo.py",
+      "contentHash": "08b1aaaef37869d69f113145f5c7fd7f5753548f9244cdc9892bcb7f420f88c7",
+      "functions": [
+        {
+          "name": "create_knowledge_base",
+          "params": [
+            "knowledge_base_name",
+            "description"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "upload_file_to_knowledge_base",
+          "params": [
+            "kb_id",
+            "file_paths"
+          ],
+          "exported": true,
+          "lineCount": 22
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os.path",
+          "specifiers": [
+            "os.path"
+          ]
+        },
+        {
+          "source": "ragflow_sdk",
+          "specifiers": [
+            "RAGFlow"
+          ]
+        },
+        {
+          "source": "rawflow.rag_config",
+          "specifiers": [
+            "_load_ragflow_env"
+          ]
+        }
+      ],
+      "exports": [
+        "create_knowledge_base",
+        "upload_file_to_knowledge_base"
+      ],
+      "totalLines": 51,
+      "hasStructuralAnalysis": true
+    },
+    "rawflow/rag_config.py": {
+      "filePath": "rawflow/rag_config.py",
+      "contentHash": "c2160f6f8d9d0087b5d46cb9ad571ffdec5499336101029c0a755bac4cedd93c",
+      "functions": [
+        {
+          "name": "_load_ragflow_env",
+          "params": [],
+          "returnType": "Tuple[Optional[str], Optional[str]]",
+          "exported": true,
+          "lineCount": 16
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "dotenv",
+          "specifiers": [
+            "load_dotenv"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Tuple",
+            "Optional"
+          ]
+        }
+      ],
+      "exports": [
+        "_load_ragflow_env"
+      ],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "1348b5131b7afe7446a54c5172b8876bf3e7abdfe85abdcd7d51be5ae4903e06",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 260,
+      "hasStructuralAnalysis": true
+    },
+    "requirements.txt": {
+      "filePath": "requirements.txt",
+      "contentHash": "1095e25c22f434bcaad582c3a189d9fa89a99b9efeec1a21db2b620859e88790",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 135,
+      "hasStructuralAnalysis": false
+    },
+    "tools/db_tools.py": {
+      "filePath": "tools/db_tools.py",
+      "contentHash": "c7c93042b996a916a4252ba46231a21b4373368a2c3ae2cd7a13bf1f682c48f9",
+      "functions": [
+        {
+          "name": "get_db_config",
+          "params": [],
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "list_sql_tables",
+          "params": [],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "get_table_data",
+          "params": [
+            "table_name"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 63
+        },
+        {
+          "name": "execute_sql_query",
+          "params": [
+            "query"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 62
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "dotenv",
+          "specifiers": [
+            "load_dotenv"
+          ]
+        },
+        {
+          "source": "api.monitor",
+          "specifiers": [
+            "monitor"
+          ]
+        },
+        {
+          "source": "mysql.connector",
+          "specifiers": [
+            "connect",
+            "Error"
+          ]
+        },
+        {
+          "source": "langchain_core.tools",
+          "specifiers": [
+            "tool"
+          ]
+        }
+      ],
+      "exports": [
+        "get_db_config",
+        "list_sql_tables",
+        "get_table_data",
+        "execute_sql_query"
+      ],
+      "totalLines": 213,
+      "hasStructuralAnalysis": true
+    },
+    "tools/markdown_tools.py": {
+      "filePath": "tools/markdown_tools.py",
+      "contentHash": "9524f76a705ac0926184b4020aa2b0143e4466a28f71eb21bf18c6a7b08a5744",
+      "functions": [
+        {
+          "name": "generate_markdown",
+          "params": [
+            "content",
+            "filename",
+            "path"
+          ],
+          "exported": true,
+          "lineCount": 44
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "logging",
+          "specifiers": [
+            "logging"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "langchain_core.tools",
+          "specifiers": [
+            "tool"
+          ]
+        },
+        {
+          "source": "api.monitor",
+          "specifiers": [
+            "monitor"
+          ]
+        },
+        {
+          "source": "api.context",
+          "specifiers": [
+            "get_session_context"
+          ]
+        },
+        {
+          "source": "utils.path_utils",
+          "specifiers": [
+            "resolve_path"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_markdown"
+      ],
+      "totalLines": 87,
+      "hasStructuralAnalysis": true
+    },
+    "tools/pdf_tools.py": {
+      "filePath": "tools/pdf_tools.py",
+      "contentHash": "b60818eeced284c15197431acfb5565768f0061776a6e68856cce66c1a9b0ea2",
+      "functions": [
+        {
+          "name": "convert_md_to_pdf",
+          "params": [
+            "md_filename",
+            "pdf_filename"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "logging",
+          "specifiers": [
+            "logging"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "langchain_core.tools",
+          "specifiers": [
+            "tool"
+          ]
+        },
+        {
+          "source": "api.monitor",
+          "specifiers": [
+            "monitor"
+          ]
+        },
+        {
+          "source": "api.context",
+          "specifiers": [
+            "get_session_context"
+          ]
+        },
+        {
+          "source": "utils.path_utils",
+          "specifiers": [
+            "resolve_path"
+          ]
+        },
+        {
+          "source": "utils.word_converter",
+          "specifiers": [
+            "convert_md_to_pdf_via_word"
+          ]
+        }
+      ],
+      "exports": [
+        "convert_md_to_pdf"
+      ],
+      "totalLines": 63,
+      "hasStructuralAnalysis": true
+    },
+    "tools/ragflow_tools.py": {
+      "filePath": "tools/ragflow_tools.py",
+      "contentHash": "aa8fe7bf2aa0dbe5db834b58f1411af13995dd86aca6cc5dd0c28918aa9ee70c",
+      "functions": [
+        {
+          "name": "get_assistant_list",
+          "params": [],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "create_ask_delete",
+          "params": [
+            "chat_name",
+            "question"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 35
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "langchain_core.tools",
+          "specifiers": [
+            "tool"
+          ]
+        },
+        {
+          "source": "ragflow_sdk",
+          "specifiers": [
+            "RAGFlow"
+          ]
+        },
+        {
+          "source": "api.monitor",
+          "specifiers": [
+            "monitor"
+          ]
+        },
+        {
+          "source": "rawflow.rag_config",
+          "specifiers": [
+            "_load_ragflow_env"
+          ]
+        }
+      ],
+      "exports": [
+        "get_assistant_list",
+        "create_ask_delete"
+      ],
+      "totalLines": 96,
+      "hasStructuralAnalysis": true
+    },
+    "tools/tavily_tool.py": {
+      "filePath": "tools/tavily_tool.py",
+      "contentHash": "0e57b69e8c7ac9c399a9f2aa681af4aaae5317fe35e041e5d15a67f2623c8c3e",
+      "functions": [
+        {
+          "name": "internet_search",
+          "params": [
+            "query",
+            "topic",
+            "max_results",
+            "include_raw_content"
+          ],
+          "exported": true,
+          "lineCount": 23
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "typing",
+          "specifiers": [
+            "Literal"
+          ]
+        },
+        {
+          "source": "langchain_core.tools",
+          "specifiers": [
+            "tool"
+          ]
+        },
+        {
+          "source": "tavily",
+          "specifiers": [
+            "TavilyClient"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "dotenv",
+          "specifiers": [
+            "load_dotenv"
+          ]
+        },
+        {
+          "source": "api.monitor",
+          "specifiers": [
+            "monitor"
+          ]
+        }
+      ],
+      "exports": [
+        "internet_search"
+      ],
+      "totalLines": 65,
+      "hasStructuralAnalysis": true
+    },
+    "tools/upload_file_read_tool.py": {
+      "filePath": "tools/upload_file_read_tool.py",
+      "contentHash": "a9f36c8c590bed6b3ec16c2af058fad319237260a13ac5a2070e7f8839ec73d5",
+      "functions": [
+        {
+          "name": "read_file_content",
+          "params": [
+            "filename",
+            "instruction"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 69
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "logging",
+          "specifiers": [
+            "logging"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Annotated",
+            "Optional"
+          ]
+        },
+        {
+          "source": "langchain_core.tools",
+          "specifiers": [
+            "tool"
+          ]
+        },
+        {
+          "source": "api.monitor",
+          "specifiers": [
+            "monitor"
+          ]
+        },
+        {
+          "source": "api.context",
+          "specifiers": [
+            "get_session_context"
+          ]
+        },
+        {
+          "source": "utils.path_utils",
+          "specifiers": [
+            "resolve_path"
+          ]
+        }
+      ],
+      "exports": [
+        "read_file_content"
+      ],
+      "totalLines": 130,
+      "hasStructuralAnalysis": true
+    },
+    "utils/path_utils.py": {
+      "filePath": "utils/path_utils.py",
+      "contentHash": "7665903d9dbe469eb1a76bf5a734d9ef5514da86920cbf9dd834831d992dd833",
+      "functions": [
+        {
+          "name": "resolve_path",
+          "params": [
+            "filename",
+            "session_dir"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "resolve_path",
+          "params": [
+            "filename",
+            "session_dir"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 103
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Optional"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Optional"
+          ]
+        }
+      ],
+      "exports": [
+        "resolve_path",
+        "resolve_path"
+      ],
+      "totalLines": 113,
+      "hasStructuralAnalysis": true
+    },
+    "utils/word_converter.py": {
+      "filePath": "utils/word_converter.py",
+      "contentHash": "06cbd0513db522cf88fd969ed55949cc4fd7ad2e0f236692070b20fe95ef40a7",
+      "functions": [
+        {
+          "name": "convert_md_to_pdf_via_word",
+          "params": [
+            "md_abs_path",
+            "pdf_abs_path"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 74
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "logging",
+          "specifiers": [
+            "logging"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "pathlib",
+          "specifiers": [
+            "Path"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        }
+      ],
+      "exports": [
+        "convert_md_to_pdf_via_word"
+      ],
+      "totalLines": 87,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

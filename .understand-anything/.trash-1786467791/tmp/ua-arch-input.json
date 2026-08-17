@@ -1,0 +1,861 @@
+{
+  "fileNodes": [
+    {
+      "id": "file:agent/llm.py",
+      "type": "file",
+      "name": "llm.py",
+      "filePath": "agent/llm.py",
+      "summary": "加载项目环境变量并初始化供各智能体共享的 LangChain 聊天模型，模型名由 LLM_QWEN_MAX 配置。",
+      "tags": [
+        "llm-config",
+        "model-factory",
+        "environment",
+        "langchain"
+      ]
+    },
+    {
+      "id": "file:agent/main_agent.py",
+      "type": "file",
+      "name": "main_agent.py",
+      "filePath": "agent/main_agent.py",
+      "summary": "组装主 Deep Agent、三个专业子智能体及文件处理工具，并负责按会话异步流式执行任务。执行过程中建立隔离目录与上下文，转发子智能体活动、最终答案和错误事件。",
+      "tags": [
+        "entry-point",
+        "agent-orchestration",
+        "async-streaming",
+        "session-management",
+        "service"
+      ]
+    },
+    {
+      "id": "file:agent/prompts.py",
+      "type": "file",
+      "name": "prompts.py",
+      "filePath": "agent/prompts.py",
+      "summary": "安全读取项目的 YAML 提示词配置，并在模块加载时拆分出主智能体和子智能体配置供组装模块使用。",
+      "tags": [
+        "configuration",
+        "prompt-loading",
+        "yaml",
+        "serialization"
+      ]
+    },
+    {
+      "id": "file:agent/subagents/database_query_agent.py",
+      "type": "file",
+      "name": "database_query_agent.py",
+      "filePath": "agent/subagents/database_query_agent.py",
+      "summary": "从提示词配置构造数据库查询子智能体定义，并为其注册表发现、表数据预览和自定义 SQL 查询工具。",
+      "tags": [
+        "agent-config",
+        "database",
+        "tool-registry",
+        "subagent"
+      ]
+    },
+    {
+      "id": "file:agent/subagents/network_search_agent.py",
+      "type": "file",
+      "name": "network_search_agent.py",
+      "filePath": "agent/subagents/network_search_agent.py",
+      "summary": "从提示词配置构造网络搜索子智能体定义，并将 Tavily 搜索函数注册为其唯一工具。",
+      "tags": [
+        "agent-config",
+        "web-search",
+        "tool-registry",
+        "subagent"
+      ]
+    },
+    {
+      "id": "file:api/server.py",
+      "type": "file",
+      "name": "server.py",
+      "filePath": "api/server.py",
+      "summary": "提供 FastAPI 服务入口，涵盖后台启动智能体任务、上传与安全浏览输出文件、下载文件以及按 thread_id 隔离的 WebSocket 实时通信。服务启动时还会把当前事件循环绑定到连接管理器。",
+      "tags": [
+        "entry-point",
+        "api-handler",
+        "websocket",
+        "file-service",
+        "fastapi"
+      ]
+    },
+    {
+      "id": "file:tools/db_tools.py",
+      "type": "file",
+      "name": "db_tools.py",
+      "filePath": "tools/db_tools.py",
+      "summary": "实现供数据库子智能体调用的 MySQL 工具：读取并校验连接配置、列出数据表、预览单表数据以及执行自定义查询。查询结果统一转成 CSV 风格文本，并通过监控层上报工具调用。",
+      "tags": [
+        "database",
+        "tool-registry",
+        "mysql",
+        "serialization",
+        "monitoring"
+      ]
+    },
+    {
+      "id": "file:tools/tavily_tool.py",
+      "type": "file",
+      "name": "tavily_tool.py",
+      "filePath": "tools/tavily_tool.py",
+      "summary": "从环境变量初始化 Tavily 客户端，并暴露带主题、结果数量和原始内容开关的 LangChain 网络搜索工具。每次搜索前都会向监控层报告调用参数。",
+      "tags": [
+        "web-search",
+        "langchain-tool",
+        "tavily",
+        "monitoring",
+        "service"
+      ]
+    },
+    {
+      "id": "file:api/context.py",
+      "type": "file",
+      "name": "context.py",
+      "filePath": "api/context.py",
+      "summary": "使用 ContextVar 隔离每个异步请求的会话目录与 thread ID，并提供设置、读取和重置上下文的辅助函数。",
+      "tags": [
+        "异步上下文",
+        "会话隔离",
+        "contextvar",
+        "状态管理"
+      ]
+    },
+    {
+      "id": "file:api/monitor.py",
+      "type": "file",
+      "name": "monitor.py",
+      "filePath": "api/monitor.py",
+      "summary": "集中管理工具与智能体执行事件，将监控消息按 thread ID 推送到 FastAPI WebSocket、脚本流输出和控制台。还维护 thread ID 到活动 WebSocket 的连接映射。",
+      "tags": [
+        "监控",
+        "websocket",
+        "事件分发",
+        "单例模式"
+      ]
+    },
+    {
+      "id": "file:tools/markdown_tools.py",
+      "type": "file",
+      "name": "markdown_tools.py",
+      "filePath": "tools/markdown_tools.py",
+      "summary": "提供 LangChain Markdown 生成工具，在会话目录约束下解析输出路径、创建父目录并以 UTF-8 写入文档，同时上报执行状态。",
+      "tags": [
+        "langchain-tool",
+        "markdown",
+        "文件生成",
+        "路径隔离"
+      ]
+    },
+    {
+      "id": "file:tools/pdf_tools.py",
+      "type": "file",
+      "name": "pdf_tools.py",
+      "filePath": "tools/pdf_tools.py",
+      "summary": "提供 Markdown 转 PDF 的 LangChain 工具，负责会话内路径解析、源文件校验与输出路径选择，再委托 Word COM 转换器执行实际转换。",
+      "tags": [
+        "langchain-tool",
+        "pdf",
+        "文档转换",
+        "路径隔离"
+      ]
+    },
+    {
+      "id": "file:tools/upload_file_read_tool.py",
+      "type": "file",
+      "name": "upload_file_read_tool.py",
+      "filePath": "tools/upload_file_read_tool.py",
+      "summary": "提供会话隔离的上传文件读取工具，按扩展名处理文本、Word、PDF 与 Excel，并对可选依赖缺失和读取失败返回明确错误。",
+      "tags": [
+        "langchain-tool",
+        "文件读取",
+        "多格式解析",
+        "可选依赖"
+      ]
+    },
+    {
+      "id": "file:utils/path_utils.py",
+      "type": "file",
+      "name": "path_utils.py",
+      "filePath": "utils/path_utils.py",
+      "summary": "统一清洗虚拟路径前缀，并结合会话目录解析 Windows、Unix 风格及上传目录路径，避免重复嵌套会话目录。",
+      "tags": [
+        "路径解析",
+        "会话隔离",
+        "跨平台",
+        "路径规范化"
+      ]
+    },
+    {
+      "id": "file:utils/word_converter.py",
+      "type": "file",
+      "name": "word_converter.py",
+      "filePath": "utils/word_converter.py",
+      "summary": "通过 Markdown 转临时 HTML、再调用 Microsoft Word COM 导出 PDF，并在 finally 中关闭 Word、删除临时文件和释放 COM。",
+      "tags": [
+        "文档转换",
+        "word-com",
+        "pdf",
+        "资源清理"
+      ]
+    },
+    {
+      "id": "file:agent/subagents/knowledge_base_agent.py",
+      "type": "file",
+      "name": "knowledge_base_agent.py",
+      "filePath": "agent/subagents/knowledge_base_agent.py",
+      "summary": "根据 YAML 提示词配置组装知识库子智能体描述，并注册 RAGFlow 助手发现与问答工具，供主智能体协作调用。",
+      "tags": [
+        "subagent",
+        "ragflow",
+        "configuration",
+        "tool-registration"
+      ]
+    },
+    {
+      "id": "file:rawflow/chat_assistant_demo.py",
+      "type": "file",
+      "name": "chat_assistant_demo.py",
+      "filePath": "rawflow/chat_assistant_demo.py",
+      "summary": "演示通过 RAGFlow SDK 枚举聊天助手及其知识库，并以临时会话执行一次流式问答后清理会话。",
+      "tags": [
+        "ragflow",
+        "demo",
+        "knowledge-retrieval",
+        "session-management"
+      ]
+    },
+    {
+      "id": "file:rawflow/knowledge_demo.py",
+      "type": "file",
+      "name": "knowledge_demo.py",
+      "filePath": "rawflow/knowledge_demo.py",
+      "summary": "演示使用 RAGFlow SDK 创建知识库，并将多个本地文件读取为二进制文档后上传到指定知识库。",
+      "tags": [
+        "ragflow",
+        "demo",
+        "knowledge-base",
+        "file-upload"
+      ]
+    },
+    {
+      "id": "file:rawflow/rag_config.py",
+      "type": "file",
+      "name": "rag_config.py",
+      "filePath": "rawflow/rag_config.py",
+      "summary": "集中加载 RAGFlow 连接配置，优先读取模块目录下的 `.env`，否则采用 dotenv 默认搜索与系统环境变量。",
+      "tags": [
+        "configuration",
+        "environment-variables",
+        "ragflow",
+        "dotenv"
+      ]
+    },
+    {
+      "id": "file:tools/ragflow_tools.py",
+      "type": "file",
+      "name": "ragflow_tools.py",
+      "filePath": "tools/ragflow_tools.py",
+      "summary": "将 RAGFlow 助手发现和临时会话问答封装为 LangChain 工具，同时上报工具调用进度并把异常转为模型可消费的文本。",
+      "tags": [
+        "langchain-tool",
+        "ragflow",
+        "monitoring",
+        "knowledge-retrieval",
+        "error-handling"
+      ]
+    },
+    {
+      "id": "config:.env.example",
+      "type": "config",
+      "name": ".env.example",
+      "filePath": ".env.example",
+      "summary": "提供项目运行所需的环境变量模板，覆盖 OpenAI-compatible LLM、Tavily、RAGFlow 与 MySQL 的连接和模型配置。文件仅包含占位值，供用户复制为 .env 后填写真实配置。",
+      "tags": [
+        "configuration",
+        "environment-variables",
+        "service-integration",
+        "credentials-template"
+      ]
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "面向学习者介绍 Deep Search Pro 的多智能体架构、请求数据流、安装配置、启动方式与推荐源码阅读顺序。文档还索引核心模块，并给出分级改造练习、技术栈说明和常见问题。",
+      "tags": [
+        "documentation",
+        "entry-point",
+        "architecture-overview",
+        "getting-started",
+        "learning-project"
+      ]
+    },
+    {
+      "id": "document:requirements.txt",
+      "type": "document",
+      "name": "requirements.txt",
+      "filePath": "requirements.txt",
+      "summary": "以精确版本锁定项目的 Python 运行依赖，覆盖 FastAPI 服务、deepagents/LangChain/LangGraph 编排、模型接入、Tavily/RAGFlow/MySQL 集成以及 Markdown、Word 和 PDF 文档处理。",
+      "tags": [
+        "dependency-management",
+        "version-pinning",
+        "python",
+        "runtime-environment"
+      ]
+    },
+    {
+      "id": "file:.understand-anything/.understandignore",
+      "type": "file",
+      "name": ".understandignore",
+      "filePath": ".understand-anything/.understandignore",
+      "summary": "定义 Understand Anything 扫描时的排除规则与可选模式，当前主动忽略环境目录、输出目录和测试会话目录等内容。",
+      "tags": [
+        "configuration",
+        "analysis-scope",
+        "ignore-rules"
+      ]
+    },
+    {
+      "id": "config:.understand-anything/config.json",
+      "type": "config",
+      "name": "config.json",
+      "filePath": ".understand-anything/config.json",
+      "summary": "设置 Understand Anything 的输出语言为中文，用于统一生成的代码库分析文本。",
+      "tags": [
+        "configuration",
+        "localization",
+        "knowledge-graph"
+      ]
+    },
+    {
+      "id": "config:prompt/prompts.yml",
+      "type": "config",
+      "name": "prompts.yml",
+      "filePath": "prompt/prompts.yml",
+      "summary": "集中定义空调企业场景下主智能体以及网络搜索、数据库查询和 RAGFlow 三类子智能体的 system prompt。配置同时约束工具路由、检索步骤、工作目录和文档生成顺序。",
+      "tags": [
+        "configuration",
+        "prompt-engineering",
+        "multi-agent",
+        "tool-routing",
+        "guardrails"
+      ]
+    }
+  ],
+  "importEdges": [
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/llm.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/database_query_agent.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/knowledge_base_agent.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/network_search_agent.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/markdown_tools.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/pdf_tools.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/upload_file_read_tool.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/database_query_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/database_query_agent.py",
+      "target": "file:tools/db_tools.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/network_search_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/network_search_agent.py",
+      "target": "file:tools/tavily_tool.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "file:agent/main_agent.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/tavily_tool.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:api/monitor.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "file:utils/path_utils.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:utils/path_utils.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:utils/word_converter.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "file:utils/path_utils.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/knowledge_base_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/knowledge_base_agent.py",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports"
+    }
+  ],
+  "allEdges": [
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/llm.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/database_query_agent.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/knowledge_base_agent.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/network_search_agent.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/markdown_tools.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/pdf_tools.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/upload_file_read_tool.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/database_query_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/database_query_agent.py",
+      "target": "file:tools/db_tools.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/network_search_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/network_search_agent.py",
+      "target": "file:tools/tavily_tool.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "file:agent/main_agent.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/tavily_tool.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:api/monitor.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "file:utils/path_utils.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:utils/path_utils.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:utils/word_converter.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "file:api/context.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "file:utils/path_utils.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/knowledge_base_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:agent/subagents/knowledge_base_agent.py",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports"
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports"
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:agent/llm.py",
+      "type": "configures"
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:rawflow/rag_config.py",
+      "type": "configures"
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "configures"
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:tools/tavily_tool.py",
+      "type": "configures"
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:tools/db_tools.py",
+      "type": "configures"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/llm.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/prompts.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/main_agent.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/subagents/network_search_agent.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/subagents/database_query_agent.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/subagents/knowledge_base_agent.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:api/server.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:api/context.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:api/monitor.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "config:prompt/prompts.yml",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/tavily_tool.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/db_tools.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/markdown_tools.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/pdf_tools.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/upload_file_read_tool.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:utils/path_utils.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:utils/word_converter.py",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "document:requirements.txt",
+      "type": "documents"
+    },
+    {
+      "source": "document:README.md",
+      "target": "config:.env.example",
+      "type": "documents"
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:agent/main_agent.py",
+      "type": "related"
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:api/server.py",
+      "type": "related"
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:tools/tavily_tool.py",
+      "type": "related"
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:tools/db_tools.py",
+      "type": "related"
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "related"
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:tools/pdf_tools.py",
+      "type": "related"
+    },
+    {
+      "source": "config:.understand-anything/config.json",
+      "target": "file:.understand-anything/.understandignore",
+      "type": "related"
+    }
+  ]
+}

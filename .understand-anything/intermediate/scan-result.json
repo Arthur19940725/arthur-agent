@@ -1,0 +1,262 @@
+{
+  "name": "deep-search-pro",
+  "description": "Deep Search Pro 是一个不到 1000 行代码的轻量多智能体协作学习项目，基于 LangChain、LangGraph 与 deepagents 由主智能体调度网络搜索、数据库查询和 RAGFlow 知识库三个子智能体，并通过 FastAPI + WebSocket 提供任务接口和实时进度。",
+  "languages": [
+    "config",
+    "json",
+    "markdown",
+    "python",
+    "txt",
+    "unknown",
+    "yaml"
+  ],
+  "frameworks": [
+    "aiohttp",
+    "deepagents",
+    "FastAPI",
+    "LangChain",
+    "LangGraph",
+    "Pydantic",
+    "SQLAlchemy",
+    "Starlette",
+    "Uvicorn"
+  ],
+  "files": [
+    {
+      "path": ".env.example",
+      "language": "config",
+      "sizeLines": 29,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/config.json",
+      "language": "json",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/llm.py",
+      "language": "python",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/main_agent.py",
+      "language": "python",
+      "sizeLines": 162,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/prompts.py",
+      "language": "python",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/subagents/database_query_agent.py",
+      "language": "python",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/subagents/knowledge_base_agent.py",
+      "language": "python",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/subagents/network_search_agent.py",
+      "language": "python",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "api/context.py",
+      "language": "python",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "api/monitor.py",
+      "language": "python",
+      "sizeLines": 156,
+      "fileCategory": "code"
+    },
+    {
+      "path": "api/server.py",
+      "language": "python",
+      "sizeLines": 241,
+      "fileCategory": "code"
+    },
+    {
+      "path": "prompt/prompts.yml",
+      "language": "yaml",
+      "sizeLines": 73,
+      "fileCategory": "config"
+    },
+    {
+      "path": "rawflow/chat_assistant_demo.py",
+      "language": "python",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "rawflow/knowledge_demo.py",
+      "language": "python",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "rawflow/rag_config.py",
+      "language": "python",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 259,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "requirements.txt",
+      "language": "txt",
+      "sizeLines": 134,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "tools/db_tools.py",
+      "language": "python",
+      "sizeLines": 212,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/markdown_tools.py",
+      "language": "python",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/pdf_tools.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/ragflow_tools.py",
+      "language": "python",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/tavily_tool.py",
+      "language": "python",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/upload_file_read_tool.py",
+      "language": "python",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/path_utils.py",
+      "language": "python",
+      "sizeLines": 112,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/word_converter.py",
+      "language": "python",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    }
+  ],
+  "totalFiles": 26,
+  "filteredByIgnore": 0,
+  "estimatedComplexity": "small",
+  "importMap": {
+    ".env.example": [],
+    ".understand-anything/.understandignore": [],
+    ".understand-anything/config.json": [],
+    "agent/llm.py": [],
+    "agent/main_agent.py": [
+      "agent/llm.py",
+      "agent/prompts.py",
+      "agent/subagents/database_query_agent.py",
+      "agent/subagents/knowledge_base_agent.py",
+      "agent/subagents/network_search_agent.py",
+      "api/context.py",
+      "api/monitor.py",
+      "tools/markdown_tools.py",
+      "tools/pdf_tools.py",
+      "tools/upload_file_read_tool.py"
+    ],
+    "agent/prompts.py": [],
+    "agent/subagents/database_query_agent.py": [
+      "agent/prompts.py",
+      "tools/db_tools.py"
+    ],
+    "agent/subagents/knowledge_base_agent.py": [
+      "agent/prompts.py",
+      "tools/ragflow_tools.py"
+    ],
+    "agent/subagents/network_search_agent.py": [
+      "agent/prompts.py",
+      "tools/tavily_tool.py"
+    ],
+    "api/context.py": [],
+    "api/monitor.py": [
+      "api/context.py"
+    ],
+    "api/server.py": [
+      "agent/main_agent.py",
+      "api/monitor.py"
+    ],
+    "prompt/prompts.yml": [],
+    "rawflow/chat_assistant_demo.py": [
+      "rawflow/rag_config.py"
+    ],
+    "rawflow/knowledge_demo.py": [
+      "rawflow/rag_config.py"
+    ],
+    "rawflow/rag_config.py": [],
+    "README.md": [],
+    "requirements.txt": [],
+    "tools/db_tools.py": [
+      "api/monitor.py"
+    ],
+    "tools/markdown_tools.py": [
+      "api/context.py",
+      "api/monitor.py",
+      "utils/path_utils.py"
+    ],
+    "tools/pdf_tools.py": [
+      "api/context.py",
+      "api/monitor.py",
+      "utils/path_utils.py",
+      "utils/word_converter.py"
+    ],
+    "tools/ragflow_tools.py": [
+      "api/monitor.py",
+      "rawflow/rag_config.py"
+    ],
+    "tools/tavily_tool.py": [
+      "api/monitor.py"
+    ],
+    "tools/upload_file_read_tool.py": [
+      "api/context.py",
+      "api/monitor.py",
+      "utils/path_utils.py"
+    ],
+    "utils/path_utils.py": [],
+    "utils/word_converter.py": []
+  }
+}

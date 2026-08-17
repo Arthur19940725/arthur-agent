@@ -1,0 +1,597 @@
+{
+  "nodes": [
+    {
+      "id": "file:agent/llm.py",
+      "type": "file",
+      "name": "llm.py",
+      "filePath": "agent/llm.py",
+      "summary": "加载项目环境变量并初始化供各智能体共享的 LangChain 聊天模型，模型名由 LLM_QWEN_MAX 配置。",
+      "tags": ["llm-config", "model-factory", "environment", "langchain"],
+      "complexity": "simple",
+      "languageNotes": "模块导入时即加载 .env 并创建模型实例，后续导入方共享该对象。"
+    },
+    {
+      "id": "file:agent/main_agent.py",
+      "type": "file",
+      "name": "main_agent.py",
+      "filePath": "agent/main_agent.py",
+      "summary": "组装主 Deep Agent、三个专业子智能体及文件处理工具，并负责按会话异步流式执行任务。执行过程中建立隔离目录与上下文，转发子智能体活动、最终答案和错误事件。",
+      "tags": ["entry-point", "agent-orchestration", "async-streaming", "session-management", "service"],
+      "complexity": "moderate",
+      "languageNotes": "使用 async generator 消费 LangGraph 流，并通过 ContextVar 辅助函数维持每个会话的目录与线程标识。"
+    },
+    {
+      "id": "function:agent/main_agent.py:run_deep_agent",
+      "type": "function",
+      "name": "run_deep_agent",
+      "filePath": "agent/main_agent.py",
+      "lineRange": [56, 161],
+      "summary": "为指定会话准备输出与上传文件，设置会话上下文后异步流式运行主智能体，并将子智能体调用、结果或异常推送给监控层。无论成功或失败都会在 finally 中重置会话上下文。",
+      "tags": ["entry-point", "async-streaming", "session-management", "agent-runner", "event-handler"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/prompts.py",
+      "type": "file",
+      "name": "prompts.py",
+      "filePath": "agent/prompts.py",
+      "summary": "安全读取项目的 YAML 提示词配置，并在模块加载时拆分出主智能体和子智能体配置供组装模块使用。",
+      "tags": ["configuration", "prompt-loading", "yaml", "serialization"],
+      "complexity": "simple",
+      "languageNotes": "使用 yaml.safe_load 避免构造不受信任 YAML 对象，但配置读取和打印均发生在模块导入阶段。"
+    },
+    {
+      "id": "function:agent/prompts.py:load_yaml",
+      "type": "function",
+      "name": "load_yaml",
+      "filePath": "agent/prompts.py",
+      "lineRange": [6, 15],
+      "summary": "以 UTF-8 打开指定 YAML 文件，并通过 safe_load 将内容解析为 Python 数据结构。",
+      "tags": ["utility", "yaml", "serialization", "security"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/subagents/database_query_agent.py",
+      "type": "file",
+      "name": "database_query_agent.py",
+      "filePath": "agent/subagents/database_query_agent.py",
+      "summary": "从提示词配置构造数据库查询子智能体定义，并为其注册表发现、表数据预览和自定义 SQL 查询工具。",
+      "tags": ["agent-config", "database", "tool-registry", "subagent"],
+      "complexity": "simple",
+      "languageNotes": "以普通字典声明 Deep Agents 子智能体，由主智能体组装阶段消费。"
+    },
+    {
+      "id": "file:agent/subagents/network_search_agent.py",
+      "type": "file",
+      "name": "network_search_agent.py",
+      "filePath": "agent/subagents/network_search_agent.py",
+      "summary": "从提示词配置构造网络搜索子智能体定义，并将 Tavily 搜索函数注册为其唯一工具。",
+      "tags": ["agent-config", "web-search", "tool-registry", "subagent"],
+      "complexity": "simple",
+      "languageNotes": "以普通字典声明 Deep Agents 子智能体，配置字段直接来自共享 YAML 内容。"
+    },
+    {
+      "id": "file:api/server.py",
+      "type": "file",
+      "name": "server.py",
+      "filePath": "api/server.py",
+      "summary": "提供 FastAPI 服务入口，涵盖后台启动智能体任务、上传与安全浏览输出文件、下载文件以及按 thread_id 隔离的 WebSocket 实时通信。服务启动时还会把当前事件循环绑定到连接管理器。",
+      "tags": ["entry-point", "api-handler", "websocket", "file-service", "fastapi"],
+      "complexity": "complex",
+      "languageNotes": "使用 FastAPI 装饰器声明 HTTP 与 WebSocket 路由，并以 asyncio.create_task 将长耗时智能体执行移出请求响应路径。"
+    },
+    {
+      "id": "class:api/server.py:TaskRequest",
+      "type": "class",
+      "name": "TaskRequest",
+      "filePath": "api/server.py",
+      "lineRange": [40, 42],
+      "summary": "定义启动智能体任务所需的请求模型，包含必填查询文本和可选线程标识。",
+      "tags": ["data-model", "validation", "api-schema", "pydantic"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:startup_event",
+      "type": "function",
+      "name": "startup_event",
+      "filePath": "api/server.py",
+      "lineRange": [45, 52],
+      "summary": "在 FastAPI 启动阶段获取正在运行的事件循环，并将其交给 WebSocket 连接管理器用于跨线程投递消息。",
+      "tags": ["event-handler", "startup", "websocket", "asyncio"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:run_task",
+      "type": "function",
+      "name": "run_task",
+      "filePath": "api/server.py",
+      "lineRange": [56, 65],
+      "summary": "接受任务请求，复用或生成 thread_id，并在后台启动主智能体后立即返回任务已开始的响应。",
+      "tags": ["api-handler", "background-task", "agent-runner", "asyncio"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:upload_files",
+      "type": "function",
+      "name": "upload_files",
+      "filePath": "api/server.py",
+      "lineRange": [69, 97],
+      "summary": "接收会话关联的多个上传文件，将其流式复制到 updated/session_<thread_id> 目录，并返回已保存文件名列表。",
+      "tags": ["api-handler", "file-upload", "session-management", "io"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:download_file",
+      "type": "function",
+      "name": "download_file",
+      "filePath": "api/server.py",
+      "lineRange": [101, 127],
+      "summary": "解析下载路径并验证其位于 output 目录内，随后对不存在或越界路径返回错误，对有效文件返回流式下载响应。",
+      "tags": ["api-handler", "file-download", "path-validation", "security"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:list_files",
+      "type": "function",
+      "name": "list_files",
+      "filePath": "api/server.py",
+      "lineRange": [131, 187],
+      "summary": "验证查询目录位于 output 根目录内，递归汇总文件路径、大小和修改时间，并按最新修改时间排序返回。",
+      "tags": ["api-handler", "file-browser", "path-validation", "serialization", "security"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:api/server.py:websocket_endpoint",
+      "type": "function",
+      "name": "websocket_endpoint",
+      "filePath": "api/server.py",
+      "lineRange": [196, 239],
+      "summary": "将 WebSocket 连接注册到指定 thread_id，循环接收客户端消息并回复 pong，在正常断开或异常时清理连接。",
+      "tags": ["api-handler", "websocket", "event-loop", "session-management"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tools/db_tools.py",
+      "type": "file",
+      "name": "db_tools.py",
+      "filePath": "tools/db_tools.py",
+      "summary": "实现供数据库子智能体调用的 MySQL 工具：读取并校验连接配置、列出数据表、预览单表数据以及执行自定义查询。查询结果统一转成 CSV 风格文本，并通过监控层上报工具调用。",
+      "tags": ["database", "tool-registry", "mysql", "serialization", "monitoring"],
+      "complexity": "moderate",
+      "languageNotes": "LangChain @tool 装饰器把普通函数暴露给智能体；数据库连接和游标使用嵌套 context manager 保证释放。"
+    },
+    {
+      "id": "function:tools/db_tools.py:get_db_config",
+      "type": "function",
+      "name": "get_db_config",
+      "filePath": "tools/db_tools.py",
+      "lineRange": [11, 33],
+      "summary": "从环境变量组装 MySQL 连接参数、移除未配置项，并在用户、密码或数据库缺失时抛出明确错误。",
+      "tags": ["configuration", "database", "environment", "validation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tools/db_tools.py:list_sql_tables",
+      "type": "function",
+      "name": "list_sql_tables",
+      "filePath": "tools/db_tools.py",
+      "lineRange": [36, 70],
+      "summary": "上报工具调用后连接 MySQL 执行 SHOW TABLES，并将表名或查询异常格式化为适合智能体消费的中文文本。",
+      "tags": ["database", "langchain-tool", "schema-discovery", "monitoring"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tools/db_tools.py:get_table_data",
+      "type": "function",
+      "name": "get_table_data",
+      "filePath": "tools/db_tools.py",
+      "lineRange": [74, 136],
+      "summary": "查询指定表的前 100 行，依据游标元数据生成列头，并把结果序列化为 CSV 风格文本供模型理解表结构和样例数据。",
+      "tags": ["database", "langchain-tool", "data-preview", "serialization", "monitoring"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tools/db_tools.py:execute_sql_query",
+      "type": "function",
+      "name": "execute_sql_query",
+      "filePath": "tools/db_tools.py",
+      "lineRange": [140, 201],
+      "summary": "执行调用方提供的 SQL 查询，将有结果集的列名和数据序列化为 CSV 风格文本，并把空结果或 MySQL 异常转换为说明文本。",
+      "tags": ["database", "langchain-tool", "sql-query", "serialization", "monitoring"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tools/tavily_tool.py",
+      "type": "file",
+      "name": "tavily_tool.py",
+      "filePath": "tools/tavily_tool.py",
+      "summary": "从环境变量初始化 Tavily 客户端，并暴露带主题、结果数量和原始内容开关的 LangChain 网络搜索工具。每次搜索前都会向监控层报告调用参数。",
+      "tags": ["web-search", "langchain-tool", "tavily", "monitoring", "service"],
+      "complexity": "simple",
+      "languageNotes": "使用 Literal 将 topic 限定为 news、finance 或 general，便于工具 schema 向模型表达允许值。"
+    },
+    {
+      "id": "function:tools/tavily_tool.py:internet_search",
+      "type": "function",
+      "name": "internet_search",
+      "filePath": "tools/tavily_tool.py",
+      "lineRange": [28, 50],
+      "summary": "记录搜索调用后将查询、主题、最大结果数和原始内容选项转发给 Tavily 客户端，并原样返回搜索结果。",
+      "tags": ["web-search", "langchain-tool", "api-client", "monitoring"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "function:agent/main_agent.py:run_deep_agent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/prompts.py",
+      "target": "function:agent/prompts.py:load_yaml",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "class:api/server.py:TaskRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:startup_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:run_task",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:upload_files",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:download_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:list_files",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:websocket_endpoint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:list_sql_tables",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:get_table_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:execute_sql_query",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/tavily_tool.py",
+      "target": "function:tools/tavily_tool.py:internet_search",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "function:agent/main_agent.py:run_deep_agent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/prompts.py",
+      "target": "function:agent/prompts.py:load_yaml",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "class:api/server.py:TaskRequest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:startup_event",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:run_task",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:upload_files",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:download_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:list_files",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:websocket_endpoint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:list_sql_tables",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:get_table_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:execute_sql_query",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/tavily_tool.py",
+      "target": "function:tools/tavily_tool.py:internet_search",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/llm.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/database_query_agent.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/knowledge_base_agent.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/network_search_agent.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:api/context.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/markdown_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/pdf_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/upload_file_read_tool.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/database_query_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/database_query_agent.py",
+      "target": "file:tools/db_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/network_search_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/network_search_agent.py",
+      "target": "file:tools/tavily_tool.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "file:agent/main_agent.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/tavily_tool.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:agent/main_agent.py:run_deep_agent",
+      "target": "function:api/context.py:set_session_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/main_agent.py:run_deep_agent",
+      "target": "function:api/context.py:set_thread_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/main_agent.py:run_deep_agent",
+      "target": "function:api/context.py:reset_session_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:api/server.py:run_task",
+      "target": "function:agent/main_agent.py:run_deep_agent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/db_tools.py:list_sql_tables",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/db_tools.py:get_table_data",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/db_tools.py:execute_sql_query",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

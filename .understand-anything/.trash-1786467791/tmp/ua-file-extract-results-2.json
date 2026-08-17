@@ -1,0 +1,1061 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 7,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "api/context.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 64,
+      "functions": [
+        {
+          "name": "set_session_context",
+          "startLine": 40,
+          "endLine": 48,
+          "params": [
+            "path"
+          ]
+        },
+        {
+          "name": "get_session_context",
+          "startLine": 51,
+          "endLine": 56,
+          "params": []
+        },
+        {
+          "name": "set_thread_context",
+          "startLine": 59,
+          "endLine": 63,
+          "params": [
+            "thread_id"
+          ]
+        },
+        {
+          "name": "get_thread_context",
+          "startLine": 66,
+          "endLine": 70,
+          "params": []
+        },
+        {
+          "name": "reset_session_context",
+          "startLine": 73,
+          "endLine": 80,
+          "params": [
+            "session_token",
+            "thread_token"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "set_session_context",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "get_session_context",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "set_thread_context",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "get_thread_context",
+          "line": 66,
+          "isDefault": false
+        },
+        {
+          "name": "reset_session_context",
+          "line": 73,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "set_session_context",
+          "callee": "_session_dir_ctx.set",
+          "lineNumber": 48
+        },
+        {
+          "caller": "get_session_context",
+          "callee": "_session_dir_ctx.get",
+          "lineNumber": 56
+        },
+        {
+          "caller": "set_thread_context",
+          "callee": "_thread_id_ctx.set",
+          "lineNumber": 63
+        },
+        {
+          "caller": "get_thread_context",
+          "callee": "_thread_id_ctx.get",
+          "lineNumber": 70
+        },
+        {
+          "caller": "reset_session_context",
+          "callee": "_session_dir_ctx.reset",
+          "lineNumber": 78
+        },
+        {
+          "caller": "reset_session_context",
+          "callee": "_thread_id_ctx.reset",
+          "lineNumber": 80
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "api/monitor.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 157,
+      "nonEmptyLines": 128,
+      "classes": [
+        {
+          "name": "ToolMonitor",
+          "startLine": 14,
+          "endLine": 118,
+          "methods": [
+            "__new__",
+            "set_websocket_manager",
+            "_emit",
+            "report_tool",
+            "report_assistant",
+            "report_task_result",
+            "report_session_dir"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ConnectionManager",
+          "startLine": 125,
+          "endLine": 154,
+          "methods": [
+            "__init__",
+            "set_loop",
+            "connect",
+            "disconnect",
+            "send_personal_message",
+            "send_to_thread"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ToolMonitor",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "ConnectionManager",
+          "line": 125,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__new__",
+          "callee": "super(ToolMonitor, cls).__new__",
+          "lineNumber": 34
+        },
+        {
+          "caller": "__new__",
+          "callee": "super",
+          "lineNumber": 34
+        },
+        {
+          "caller": "_emit",
+          "callee": "datetime.datetime.now().isoformat",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_emit",
+          "callee": "datetime.datetime.now",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_emit",
+          "callee": "get_thread_context",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_emit",
+          "callee": "asyncio.get_running_loop",
+          "lineNumber": 66
+        },
+        {
+          "caller": "_emit",
+          "callee": "print",
+          "lineNumber": 67
+        },
+        {
+          "caller": "_emit",
+          "callee": "current_loop.create_task",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_emit",
+          "callee": "self.websocket_manager.send_to_thread",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_emit",
+          "callee": "asyncio.run_coroutine_threadsafe",
+          "lineNumber": 81
+        },
+        {
+          "caller": "_emit",
+          "callee": "self.websocket_manager.send_to_thread",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_emit",
+          "callee": "print",
+          "lineNumber": 89
+        },
+        {
+          "caller": "_emit",
+          "callee": "hasattr",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_emit",
+          "callee": "hasattr",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_emit",
+          "callee": "builtins.runtime.stream_writer",
+          "lineNumber": 95
+        },
+        {
+          "caller": "_emit",
+          "callee": "print",
+          "lineNumber": 101
+        },
+        {
+          "caller": "report_tool",
+          "callee": "self._emit",
+          "lineNumber": 105
+        },
+        {
+          "caller": "report_assistant",
+          "callee": "self._emit",
+          "lineNumber": 109
+        },
+        {
+          "caller": "report_task_result",
+          "callee": "self._emit",
+          "lineNumber": 114
+        },
+        {
+          "caller": "report_session_dir",
+          "callee": "self._emit",
+          "lineNumber": 118
+        },
+        {
+          "caller": "set_loop",
+          "callee": "monitor.set_websocket_manager",
+          "lineNumber": 134
+        },
+        {
+          "caller": "set_loop",
+          "callee": "print",
+          "lineNumber": 135
+        },
+        {
+          "caller": "set_loop",
+          "callee": "id",
+          "lineNumber": 135
+        },
+        {
+          "caller": "connect",
+          "callee": "websocket.accept",
+          "lineNumber": 138
+        },
+        {
+          "caller": "connect",
+          "callee": "print",
+          "lineNumber": 139
+        },
+        {
+          "caller": "connect",
+          "callee": "print",
+          "lineNumber": 141
+        },
+        {
+          "caller": "disconnect",
+          "callee": "print",
+          "lineNumber": 146
+        },
+        {
+          "caller": "send_personal_message",
+          "callee": "websocket.send_text",
+          "lineNumber": 149
+        },
+        {
+          "caller": "send_to_thread",
+          "callee": "websocket.send_json",
+          "lineNumber": 154
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "tools/markdown_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 87,
+      "nonEmptyLines": 72,
+      "functions": [
+        {
+          "name": "generate_markdown",
+          "startLine": 16,
+          "endLine": 59,
+          "params": [
+            "content",
+            "filename",
+            "path"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "generate_markdown",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "generate_markdown",
+          "callee": "print",
+          "lineNumber": 22
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "monitor.report_tool",
+          "lineNumber": 23
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "filename.endswith",
+          "lineNumber": 24
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "get_session_context",
+          "lineNumber": 28
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "print",
+          "lineNumber": 29
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "str",
+          "lineNumber": 35
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "Path",
+          "lineNumber": 35
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "resolve_path",
+          "lineNumber": 38
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "Path",
+          "lineNumber": 39
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "print",
+          "lineNumber": 45
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "parent_dir.exists",
+          "lineNumber": 48
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "parent_dir.mkdir",
+          "lineNumber": 49
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "print",
+          "lineNumber": 50
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "file_path.write_text",
+          "lineNumber": 53
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "print",
+          "lineNumber": 55
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "print",
+          "lineNumber": 58
+        },
+        {
+          "caller": "generate_markdown",
+          "callee": "str",
+          "lineNumber": 59
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tools/pdf_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 63,
+      "nonEmptyLines": 50,
+      "functions": [
+        {
+          "name": "convert_md_to_pdf",
+          "startLine": 18,
+          "endLine": 50,
+          "params": [
+            "md_filename",
+            "pdf_filename"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "convert_md_to_pdf",
+          "line": 17,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "monitor.report_tool",
+          "lineNumber": 26
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "get_session_context",
+          "lineNumber": 30
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "Path(md_filename).with_suffix",
+          "lineNumber": 31
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "Path",
+          "lineNumber": 31
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "Path",
+          "lineNumber": 32
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "resolve_path",
+          "lineNumber": 32
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "str",
+          "lineNumber": 32
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "md_abs_path.exists",
+          "lineNumber": 35
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "Path(pdf_filename).with_suffix",
+          "lineNumber": 40
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "Path",
+          "lineNumber": 40
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "Path",
+          "lineNumber": 41
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "resolve_path",
+          "lineNumber": 41
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "str",
+          "lineNumber": 41
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "md_abs_path.with_suffix",
+          "lineNumber": 43
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "convert_md_to_pdf_via_word",
+          "lineNumber": 46
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "logging.error",
+          "lineNumber": 49
+        },
+        {
+          "caller": "convert_md_to_pdf",
+          "callee": "str",
+          "lineNumber": 50
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tools/upload_file_read_tool.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 130,
+      "nonEmptyLines": 107,
+      "functions": [
+        {
+          "name": "read_file_content",
+          "startLine": 37,
+          "endLine": 105,
+          "params": [
+            "filename",
+            "instruction"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "read_file_content",
+          "line": 36,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "read_file_content",
+          "callee": "monitor.report_tool",
+          "lineNumber": 45
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "get_session_context",
+          "lineNumber": 48
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "Path",
+          "lineNumber": 49
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "resolve_path",
+          "lineNumber": 49
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "file_path.exists",
+          "lineNumber": 52
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "file_path.suffix.lower",
+          "lineNumber": 56
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "file_path.read_text",
+          "lineNumber": 61
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "docx.Document",
+          "lineNumber": 66
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "str",
+          "lineNumber": 66
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "'\\n'.join",
+          "lineNumber": 68
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "pypdf.PdfReader",
+          "lineNumber": 73
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "str",
+          "lineNumber": 73
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "\"\\n\".join",
+          "lineNumber": 74
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "page.extract_text",
+          "lineNumber": 74
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "pd.read_excel",
+          "lineNumber": 82
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "str",
+          "lineNumber": 82
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "str",
+          "lineNumber": 84
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "len",
+          "lineNumber": 88
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "len",
+          "lineNumber": 88
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "', '.join",
+          "lineNumber": 89
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "df.columns.astype",
+          "lineNumber": 89
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "df.head().to_string",
+          "lineNumber": 91
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "df.head",
+          "lineNumber": 91
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "df.describe().to_string",
+          "lineNumber": 93
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "df.describe",
+          "lineNumber": 93
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "\"\\n\".join",
+          "lineNumber": 95
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "file_path.read_text",
+          "lineNumber": 100
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "str",
+          "lineNumber": 105
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "utils/path_utils.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 113,
+      "nonEmptyLines": 93,
+      "functions": [
+        {
+          "name": "resolve_path",
+          "startLine": 6,
+          "endLine": 7,
+          "params": [
+            "filename",
+            "session_dir"
+          ]
+        },
+        {
+          "name": "resolve_path",
+          "startLine": 11,
+          "endLine": 113,
+          "params": [
+            "filename",
+            "session_dir"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "resolve_path",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "resolve_path",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "resolve_path",
+          "callee": "Path",
+          "lineNumber": 44
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "filename.replace",
+          "lineNumber": 45
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "path_str.startswith",
+          "lineNumber": 50
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "path_str[len(prefix):].lstrip",
+          "lineNumber": 52
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "len",
+          "lineNumber": 52
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "Path",
+          "lineNumber": 53
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str(path).replace",
+          "lineNumber": 54
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str",
+          "lineNumber": 54
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "path_str.find",
+          "lineNumber": 60
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str",
+          "lineNumber": 62
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "Path(relative_part).resolve",
+          "lineNumber": 62
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "Path",
+          "lineNumber": 62
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str",
+          "lineNumber": 65
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "path.resolve",
+          "lineNumber": 65
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "Path(session_dir).resolve",
+          "lineNumber": 67
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "Path",
+          "lineNumber": 67
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "path_str.startswith",
+          "lineNumber": 73
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "path.is_absolute",
+          "lineNumber": 76
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "path_str.lstrip",
+          "lineNumber": 79
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "path.resolve",
+          "lineNumber": 81
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "range",
+          "lineNumber": 90
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "len",
+          "lineNumber": 90
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str",
+          "lineNumber": 93
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str",
+          "lineNumber": 94
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str",
+          "lineNumber": 99
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str",
+          "lineNumber": 107
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str",
+          "lineNumber": 110
+        },
+        {
+          "caller": "resolve_path",
+          "callee": "str",
+          "lineNumber": 113
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "utils/word_converter.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 87,
+      "nonEmptyLines": 74,
+      "functions": [
+        {
+          "name": "convert_md_to_pdf_via_word",
+          "startLine": 14,
+          "endLine": 87,
+          "params": [
+            "md_abs_path",
+            "pdf_abs_path"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "convert_md_to_pdf_via_word",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "md_abs_path.with_suffix",
+          "lineNumber": 19
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "open",
+          "lineNumber": 24
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "f.read",
+          "lineNumber": 25
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "markdown.markdown",
+          "lineNumber": 27
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "open",
+          "lineNumber": 46
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "f.write",
+          "lineNumber": 47
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "pythoncom.CoInitialize",
+          "lineNumber": 50
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "win32com.client.Dispatch",
+          "lineNumber": 51
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "word_app.Documents.Open",
+          "lineNumber": 55
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "str",
+          "lineNumber": 55
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "temp_html_path.resolve",
+          "lineNumber": 55
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "doc.SaveAs",
+          "lineNumber": 56
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "str",
+          "lineNumber": 56
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "pdf_abs_path.resolve",
+          "lineNumber": 56
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "doc.Close",
+          "lineNumber": 57
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "pdf_abs_path.exists",
+          "lineNumber": 59
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "logging.error",
+          "lineNumber": 67
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "str",
+          "lineNumber": 68
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "word_app.Quit",
+          "lineNumber": 74
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "temp_html_path.exists",
+          "lineNumber": 78
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "temp_html_path.unlink",
+          "lineNumber": 80
+        },
+        {
+          "caller": "convert_md_to_pdf_via_word",
+          "callee": "pythoncom.CoUninitialize",
+          "lineNumber": 85
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

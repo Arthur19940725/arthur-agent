@@ -1,0 +1,375 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "agent/subagents/knowledge_base_agent.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 8,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "rawflow/chat_assistant_demo.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 71,
+      "nonEmptyLines": 63,
+      "functions": [
+        {
+          "name": "get_assistant_list",
+          "startLine": 13,
+          "endLine": 32,
+          "params": []
+        },
+        {
+          "name": "ask_question",
+          "startLine": 35,
+          "endLine": 67,
+          "params": [
+            "chat_name",
+            "question"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_assistant_list",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "ask_question",
+          "line": 35,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_assistant_list",
+          "callee": "ragflow_client.list_chats",
+          "lineNumber": 16
+        },
+        {
+          "caller": "get_assistant_list",
+          "callee": "isinstance",
+          "lineNumber": 22
+        },
+        {
+          "caller": "get_assistant_list",
+          "callee": "print",
+          "lineNumber": 25
+        },
+        {
+          "caller": "get_assistant_list",
+          "callee": "dataset_names.append",
+          "lineNumber": 26
+        },
+        {
+          "caller": "get_assistant_list",
+          "callee": "'、'.join",
+          "lineNumber": 30
+        },
+        {
+          "caller": "ask_question",
+          "callee": "ragflow_client.list_chats",
+          "lineNumber": 49
+        },
+        {
+          "caller": "ask_question",
+          "callee": "use_chat.create_session",
+          "lineNumber": 52
+        },
+        {
+          "caller": "ask_question",
+          "callee": "session.ask",
+          "lineNumber": 55
+        },
+        {
+          "caller": "ask_question",
+          "callee": "print",
+          "lineNumber": 61
+        },
+        {
+          "caller": "ask_question",
+          "callee": "use_chat.delete_sessions",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "rawflow/knowledge_demo.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 51,
+      "nonEmptyLines": 44,
+      "functions": [
+        {
+          "name": "create_knowledge_base",
+          "startLine": 13,
+          "endLine": 22,
+          "params": [
+            "knowledge_base_name",
+            "description"
+          ]
+        },
+        {
+          "name": "upload_file_to_knowledge_base",
+          "startLine": 30,
+          "endLine": 51,
+          "params": [
+            "kb_id",
+            "file_paths"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "create_knowledge_base",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "upload_file_to_knowledge_base",
+          "line": 30,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create_knowledge_base",
+          "callee": "ragflow_client.create_dataset",
+          "lineNumber": 21
+        },
+        {
+          "caller": "create_knowledge_base",
+          "callee": "print",
+          "lineNumber": 22
+        },
+        {
+          "caller": "upload_file_to_knowledge_base",
+          "callee": "ragflow_client.list_datasets",
+          "lineNumber": 36
+        },
+        {
+          "caller": "upload_file_to_knowledge_base",
+          "callee": "os.path.basename",
+          "lineNumber": 42
+        },
+        {
+          "caller": "upload_file_to_knowledge_base",
+          "callee": "open",
+          "lineNumber": 43
+        },
+        {
+          "caller": "upload_file_to_knowledge_base",
+          "callee": "f.read",
+          "lineNumber": 44
+        },
+        {
+          "caller": "upload_file_to_knowledge_base",
+          "callee": "document_list.append",
+          "lineNumber": 45
+        },
+        {
+          "caller": "upload_file_to_knowledge_base",
+          "callee": "dataset.upload_documents",
+          "lineNumber": 51
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "rawflow/rag_config.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 18,
+      "functions": [
+        {
+          "name": "_load_ragflow_env",
+          "startLine": 5,
+          "endLine": 20,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_load_ragflow_env",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_load_ragflow_env",
+          "callee": "os.path.dirname",
+          "lineNumber": 11
+        },
+        {
+          "caller": "_load_ragflow_env",
+          "callee": "os.path.abspath",
+          "lineNumber": 11
+        },
+        {
+          "caller": "_load_ragflow_env",
+          "callee": "os.path.join",
+          "lineNumber": 12
+        },
+        {
+          "caller": "_load_ragflow_env",
+          "callee": "os.path.exists",
+          "lineNumber": 13
+        },
+        {
+          "caller": "_load_ragflow_env",
+          "callee": "load_dotenv",
+          "lineNumber": 14
+        },
+        {
+          "caller": "_load_ragflow_env",
+          "callee": "load_dotenv",
+          "lineNumber": 16
+        },
+        {
+          "caller": "_load_ragflow_env",
+          "callee": "os.getenv",
+          "lineNumber": 18
+        },
+        {
+          "caller": "_load_ragflow_env",
+          "callee": "os.getenv",
+          "lineNumber": 19
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tools/ragflow_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 96,
+      "nonEmptyLines": 86,
+      "functions": [
+        {
+          "name": "get_assistant_list",
+          "startLine": 18,
+          "endLine": 54,
+          "params": []
+        },
+        {
+          "name": "create_ask_delete",
+          "startLine": 58,
+          "endLine": 92,
+          "params": [
+            "chat_name",
+            "question"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_assistant_list",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "create_ask_delete",
+          "line": 57,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_assistant_list",
+          "callee": "monitor.report_tool",
+          "lineNumber": 30
+        },
+        {
+          "caller": "get_assistant_list",
+          "callee": "ragflow_client.list_chats",
+          "lineNumber": 35
+        },
+        {
+          "caller": "get_assistant_list",
+          "callee": "isinstance",
+          "lineNumber": 43
+        },
+        {
+          "caller": "get_assistant_list",
+          "callee": "dataset_names.append",
+          "lineNumber": 47
+        },
+        {
+          "caller": "get_assistant_list",
+          "callee": "'、'.join",
+          "lineNumber": 51
+        },
+        {
+          "caller": "get_assistant_list",
+          "callee": "str",
+          "lineNumber": 54
+        },
+        {
+          "caller": "create_ask_delete",
+          "callee": "monitor.report_tool",
+          "lineNumber": 68
+        },
+        {
+          "caller": "create_ask_delete",
+          "callee": "ragflow_client.list_chats",
+          "lineNumber": 72
+        },
+        {
+          "caller": "create_ask_delete",
+          "callee": "use_chat.create_session",
+          "lineNumber": 75
+        },
+        {
+          "caller": "create_ask_delete",
+          "callee": "session.ask",
+          "lineNumber": 78
+        },
+        {
+          "caller": "create_ask_delete",
+          "callee": "use_chat.delete_sessions",
+          "lineNumber": 88
+        },
+        {
+          "caller": "create_ask_delete",
+          "callee": "str",
+          "lineNumber": 92
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

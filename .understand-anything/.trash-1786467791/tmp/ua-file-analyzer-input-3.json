@@ -1,0 +1,80 @@
+{
+  "projectRoot": "D:\\code\\deep-search-pro",
+  "batchFiles": [
+    {
+      "path": "agent/subagents/knowledge_base_agent.py",
+      "language": "python",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "rawflow/chat_assistant_demo.py",
+      "language": "python",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "rawflow/knowledge_demo.py",
+      "language": "python",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "rawflow/rag_config.py",
+      "language": "python",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/ragflow_tools.py",
+      "language": "python",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "agent/subagents/knowledge_base_agent.py": [
+      "agent/prompts.py",
+      "tools/ragflow_tools.py"
+    ],
+    "rawflow/chat_assistant_demo.py": [
+      "rawflow/rag_config.py"
+    ],
+    "rawflow/knowledge_demo.py": [
+      "rawflow/rag_config.py"
+    ],
+    "rawflow/rag_config.py": [],
+    "tools/ragflow_tools.py": [
+      "api/monitor.py",
+      "rawflow/rag_config.py"
+    ]
+  },
+  "neighborMap": {
+    "agent/subagents/knowledge_base_agent.py": [
+      {
+        "path": "agent/prompts.py",
+        "batchIndex": 1,
+        "symbols": [
+          "load_yaml"
+        ]
+      },
+      {
+        "path": "agent/main_agent.py",
+        "batchIndex": 1,
+        "symbols": [
+          "run_deep_agent"
+        ]
+      }
+    ],
+    "tools/ragflow_tools.py": [
+      {
+        "path": "api/monitor.py",
+        "batchIndex": 2,
+        "symbols": [
+          "ToolMonitor",
+          "ConnectionManager"
+        ]
+      }
+    ]
+  }
+}

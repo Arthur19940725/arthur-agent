@@ -1,0 +1,699 @@
+{
+  "scriptCompleted": true,
+  "commonPathPrefix": "",
+  "flatProject": false,
+  "directoryGroups": {
+    ".understand-anything": [
+      "config:.understand-anything/config.json",
+      "file:.understand-anything/.understandignore"
+    ],
+    "agent": [
+      "file:agent/llm.py",
+      "file:agent/main_agent.py",
+      "file:agent/prompts.py",
+      "file:agent/subagents/database_query_agent.py",
+      "file:agent/subagents/knowledge_base_agent.py",
+      "file:agent/subagents/network_search_agent.py"
+    ],
+    "api": [
+      "file:api/context.py",
+      "file:api/monitor.py",
+      "file:api/server.py"
+    ],
+    "prompt": [
+      "config:prompt/prompts.yml"
+    ],
+    "rawflow": [
+      "file:rawflow/chat_assistant_demo.py",
+      "file:rawflow/knowledge_demo.py",
+      "file:rawflow/rag_config.py"
+    ],
+    "root": [
+      "config:.env.example",
+      "document:README.md",
+      "document:requirements.txt"
+    ],
+    "tools": [
+      "file:tools/db_tools.py",
+      "file:tools/markdown_tools.py",
+      "file:tools/pdf_tools.py",
+      "file:tools/ragflow_tools.py",
+      "file:tools/tavily_tool.py",
+      "file:tools/upload_file_read_tool.py"
+    ],
+    "utils": [
+      "file:utils/path_utils.py",
+      "file:utils/word_converter.py"
+    ]
+  },
+  "nodeTypeGroups": {
+    "config": [
+      "config:.env.example",
+      "config:.understand-anything/config.json",
+      "config:prompt/prompts.yml"
+    ],
+    "document": [
+      "document:README.md",
+      "document:requirements.txt"
+    ],
+    "file": [
+      "file:.understand-anything/.understandignore",
+      "file:agent/llm.py",
+      "file:agent/main_agent.py",
+      "file:agent/prompts.py",
+      "file:agent/subagents/database_query_agent.py",
+      "file:agent/subagents/knowledge_base_agent.py",
+      "file:agent/subagents/network_search_agent.py",
+      "file:api/context.py",
+      "file:api/monitor.py",
+      "file:api/server.py",
+      "file:rawflow/chat_assistant_demo.py",
+      "file:rawflow/knowledge_demo.py",
+      "file:rawflow/rag_config.py",
+      "file:tools/db_tools.py",
+      "file:tools/markdown_tools.py",
+      "file:tools/pdf_tools.py",
+      "file:tools/ragflow_tools.py",
+      "file:tools/tavily_tool.py",
+      "file:tools/upload_file_read_tool.py",
+      "file:utils/path_utils.py",
+      "file:utils/word_converter.py"
+    ]
+  },
+  "importAdjacency": {
+    "config:.env.example": [],
+    "config:.understand-anything/config.json": [],
+    "config:prompt/prompts.yml": [],
+    "document:README.md": [],
+    "document:requirements.txt": [],
+    "file:.understand-anything/.understandignore": [],
+    "file:agent/llm.py": [],
+    "file:agent/main_agent.py": [
+      "file:agent/llm.py",
+      "file:agent/prompts.py",
+      "file:agent/subagents/database_query_agent.py",
+      "file:agent/subagents/knowledge_base_agent.py",
+      "file:agent/subagents/network_search_agent.py",
+      "file:api/context.py",
+      "file:api/monitor.py",
+      "file:tools/markdown_tools.py",
+      "file:tools/pdf_tools.py",
+      "file:tools/upload_file_read_tool.py"
+    ],
+    "file:agent/prompts.py": [],
+    "file:agent/subagents/database_query_agent.py": [
+      "file:agent/prompts.py",
+      "file:tools/db_tools.py"
+    ],
+    "file:agent/subagents/knowledge_base_agent.py": [
+      "file:agent/prompts.py",
+      "file:tools/ragflow_tools.py"
+    ],
+    "file:agent/subagents/network_search_agent.py": [
+      "file:agent/prompts.py",
+      "file:tools/tavily_tool.py"
+    ],
+    "file:api/context.py": [],
+    "file:api/monitor.py": [
+      "file:api/context.py"
+    ],
+    "file:api/server.py": [
+      "file:agent/main_agent.py",
+      "file:api/monitor.py"
+    ],
+    "file:rawflow/chat_assistant_demo.py": [
+      "file:rawflow/rag_config.py"
+    ],
+    "file:rawflow/knowledge_demo.py": [
+      "file:rawflow/rag_config.py"
+    ],
+    "file:rawflow/rag_config.py": [],
+    "file:tools/db_tools.py": [
+      "file:api/monitor.py"
+    ],
+    "file:tools/markdown_tools.py": [
+      "file:api/context.py",
+      "file:api/monitor.py",
+      "file:utils/path_utils.py"
+    ],
+    "file:tools/pdf_tools.py": [
+      "file:api/context.py",
+      "file:api/monitor.py",
+      "file:utils/path_utils.py",
+      "file:utils/word_converter.py"
+    ],
+    "file:tools/ragflow_tools.py": [
+      "file:api/monitor.py",
+      "file:rawflow/rag_config.py"
+    ],
+    "file:tools/tavily_tool.py": [
+      "file:api/monitor.py"
+    ],
+    "file:tools/upload_file_read_tool.py": [
+      "file:api/context.py",
+      "file:api/monitor.py",
+      "file:utils/path_utils.py"
+    ],
+    "file:utils/path_utils.py": [],
+    "file:utils/word_converter.py": []
+  },
+  "groupAdjacency": {
+    ".understand-anything": {
+      "importsFrom": [],
+      "importedBy": []
+    },
+    "agent": {
+      "importsFrom": [
+        "api",
+        "tools"
+      ],
+      "importedBy": [
+        "api"
+      ]
+    },
+    "api": {
+      "importsFrom": [
+        "agent"
+      ],
+      "importedBy": [
+        "agent",
+        "tools"
+      ]
+    },
+    "prompt": {
+      "importsFrom": [],
+      "importedBy": []
+    },
+    "rawflow": {
+      "importsFrom": [],
+      "importedBy": [
+        "tools"
+      ]
+    },
+    "root": {
+      "importsFrom": [],
+      "importedBy": []
+    },
+    "tools": {
+      "importsFrom": [
+        "api",
+        "rawflow",
+        "utils"
+      ],
+      "importedBy": [
+        "agent"
+      ]
+    },
+    "utils": {
+      "importsFrom": [],
+      "importedBy": [
+        "tools"
+      ]
+    }
+  },
+  "crossCategoryEdges": [
+    {
+      "fromType": "config",
+      "toType": "file",
+      "edgeType": "configures",
+      "count": 5
+    },
+    {
+      "fromType": "config",
+      "toType": "file",
+      "edgeType": "related",
+      "count": 1
+    },
+    {
+      "fromType": "document",
+      "toType": "config",
+      "edgeType": "documents",
+      "count": 2
+    },
+    {
+      "fromType": "document",
+      "toType": "document",
+      "edgeType": "documents",
+      "count": 1
+    },
+    {
+      "fromType": "document",
+      "toType": "file",
+      "edgeType": "documents",
+      "count": 17
+    },
+    {
+      "fromType": "document",
+      "toType": "file",
+      "edgeType": "related",
+      "count": 6
+    },
+    {
+      "fromType": "file",
+      "toType": "file",
+      "edgeType": "imports",
+      "count": 35
+    }
+  ],
+  "nonCodeConnections": [
+    {
+      "sourceNodeId": "config:.env.example",
+      "sourceType": "config",
+      "targetNodeId": "file:agent/llm.py",
+      "targetType": "file",
+      "edgeType": "configures"
+    },
+    {
+      "sourceNodeId": "config:.env.example",
+      "sourceType": "config",
+      "targetNodeId": "file:rawflow/rag_config.py",
+      "targetType": "file",
+      "edgeType": "configures"
+    },
+    {
+      "sourceNodeId": "config:.env.example",
+      "sourceType": "config",
+      "targetNodeId": "file:tools/db_tools.py",
+      "targetType": "file",
+      "edgeType": "configures"
+    },
+    {
+      "sourceNodeId": "config:.env.example",
+      "sourceType": "config",
+      "targetNodeId": "file:tools/ragflow_tools.py",
+      "targetType": "file",
+      "edgeType": "configures"
+    },
+    {
+      "sourceNodeId": "config:.env.example",
+      "sourceType": "config",
+      "targetNodeId": "file:tools/tavily_tool.py",
+      "targetType": "file",
+      "edgeType": "configures"
+    },
+    {
+      "sourceNodeId": "config:.understand-anything/config.json",
+      "sourceType": "config",
+      "targetNodeId": "file:.understand-anything/.understandignore",
+      "targetType": "file",
+      "edgeType": "related"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:agent/llm.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:agent/main_agent.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:agent/prompts.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:agent/subagents/database_query_agent.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:agent/subagents/knowledge_base_agent.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:agent/subagents/network_search_agent.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:api/context.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:api/monitor.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:api/server.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/db_tools.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/markdown_tools.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/pdf_tools.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/ragflow_tools.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/tavily_tool.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/upload_file_read_tool.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:utils/path_utils.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:README.md",
+      "sourceType": "document",
+      "targetNodeId": "file:utils/word_converter.py",
+      "targetType": "file",
+      "edgeType": "documents"
+    },
+    {
+      "sourceNodeId": "document:requirements.txt",
+      "sourceType": "document",
+      "targetNodeId": "file:agent/main_agent.py",
+      "targetType": "file",
+      "edgeType": "related"
+    },
+    {
+      "sourceNodeId": "document:requirements.txt",
+      "sourceType": "document",
+      "targetNodeId": "file:api/server.py",
+      "targetType": "file",
+      "edgeType": "related"
+    },
+    {
+      "sourceNodeId": "document:requirements.txt",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/db_tools.py",
+      "targetType": "file",
+      "edgeType": "related"
+    },
+    {
+      "sourceNodeId": "document:requirements.txt",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/pdf_tools.py",
+      "targetType": "file",
+      "edgeType": "related"
+    },
+    {
+      "sourceNodeId": "document:requirements.txt",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/ragflow_tools.py",
+      "targetType": "file",
+      "edgeType": "related"
+    },
+    {
+      "sourceNodeId": "document:requirements.txt",
+      "sourceType": "document",
+      "targetNodeId": "file:tools/tavily_tool.py",
+      "targetType": "file",
+      "edgeType": "related"
+    }
+  ],
+  "interGroupImports": [
+    {
+      "from": "agent",
+      "to": "api",
+      "count": 2
+    },
+    {
+      "from": "agent",
+      "to": "tools",
+      "count": 6
+    },
+    {
+      "from": "api",
+      "to": "agent",
+      "count": 1
+    },
+    {
+      "from": "tools",
+      "to": "api",
+      "count": 9
+    },
+    {
+      "from": "tools",
+      "to": "rawflow",
+      "count": 1
+    },
+    {
+      "from": "tools",
+      "to": "utils",
+      "count": 4
+    }
+  ],
+  "intraGroupDensity": {
+    ".understand-anything": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "agent": {
+      "internalEdges": 8,
+      "totalEdges": 17,
+      "density": 0.4706
+    },
+    "api": {
+      "internalEdges": 2,
+      "totalEdges": 14,
+      "density": 0.1429
+    },
+    "prompt": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "rawflow": {
+      "internalEdges": 2,
+      "totalEdges": 3,
+      "density": 0.6667
+    },
+    "root": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "tools": {
+      "internalEdges": 0,
+      "totalEdges": 20,
+      "density": 0
+    },
+    "utils": {
+      "internalEdges": 0,
+      "totalEdges": 4,
+      "density": 0
+    }
+  },
+  "patternMatches": {
+    "api": "api",
+    "tools": "utility",
+    "utils": "utility"
+  },
+  "filePatternMatches": {
+    "config:.env.example": "config",
+    "config:.understand-anything/config.json": "config",
+    "config:prompt/prompts.yml": "config",
+    "document:README.md": "documentation",
+    "document:requirements.txt": "extension:txt",
+    "file:.understand-anything/.understandignore": "other",
+    "file:agent/llm.py": "extension:py",
+    "file:agent/main_agent.py": "extension:py",
+    "file:agent/prompts.py": "extension:py",
+    "file:agent/subagents/database_query_agent.py": "extension:py",
+    "file:agent/subagents/knowledge_base_agent.py": "extension:py",
+    "file:agent/subagents/network_search_agent.py": "extension:py",
+    "file:api/context.py": "extension:py",
+    "file:api/monitor.py": "extension:py",
+    "file:api/server.py": "extension:py",
+    "file:rawflow/chat_assistant_demo.py": "extension:py",
+    "file:rawflow/knowledge_demo.py": "extension:py",
+    "file:rawflow/rag_config.py": "extension:py",
+    "file:tools/db_tools.py": "extension:py",
+    "file:tools/markdown_tools.py": "extension:py",
+    "file:tools/pdf_tools.py": "extension:py",
+    "file:tools/ragflow_tools.py": "extension:py",
+    "file:tools/tavily_tool.py": "extension:py",
+    "file:tools/upload_file_read_tool.py": "extension:py",
+    "file:utils/path_utils.py": "extension:py",
+    "file:utils/word_converter.py": "extension:py"
+  },
+  "deploymentTopology": {
+    "hasDockerfile": false,
+    "hasCompose": false,
+    "hasK8s": false,
+    "hasTerraform": false,
+    "hasCI": false,
+    "infraFiles": []
+  },
+  "dataPipeline": {
+    "schemaFiles": [],
+    "migrationFiles": [],
+    "dataModelFiles": [
+      "agent/subagents/database_query_agent.py",
+      "tools/db_tools.py"
+    ],
+    "apiHandlerFiles": [
+      "api/server.py"
+    ]
+  },
+  "docCoverage": {
+    "groupsWithDocs": 6,
+    "totalGroups": 8,
+    "coverageRatio": 0.75,
+    "undocumentedGroups": [
+      ".understand-anything",
+      "rawflow"
+    ]
+  },
+  "dependencyDirection": [
+    {
+      "dependent": "agent",
+      "dependsOn": "api",
+      "count": 2
+    },
+    {
+      "dependent": "agent",
+      "dependsOn": "tools",
+      "count": 6
+    },
+    {
+      "dependent": "tools",
+      "dependsOn": "api",
+      "count": 9
+    },
+    {
+      "dependent": "tools",
+      "dependsOn": "rawflow",
+      "count": 1
+    },
+    {
+      "dependent": "tools",
+      "dependsOn": "utils",
+      "count": 4
+    }
+  ],
+  "fileStats": {
+    "totalFileNodes": 26,
+    "filesPerGroup": {
+      ".understand-anything": 2,
+      "agent": 6,
+      "api": 3,
+      "prompt": 1,
+      "rawflow": 3,
+      "root": 3,
+      "tools": 6,
+      "utils": 2
+    },
+    "nodeTypeCounts": {
+      "config": 3,
+      "document": 2,
+      "file": 21
+    }
+  },
+  "fileFanIn": {
+    "config:.env.example": 0,
+    "config:.understand-anything/config.json": 0,
+    "config:prompt/prompts.yml": 0,
+    "document:README.md": 0,
+    "document:requirements.txt": 0,
+    "file:.understand-anything/.understandignore": 0,
+    "file:agent/llm.py": 1,
+    "file:agent/main_agent.py": 1,
+    "file:agent/prompts.py": 4,
+    "file:agent/subagents/database_query_agent.py": 1,
+    "file:agent/subagents/knowledge_base_agent.py": 1,
+    "file:agent/subagents/network_search_agent.py": 1,
+    "file:api/context.py": 5,
+    "file:api/monitor.py": 8,
+    "file:api/server.py": 0,
+    "file:rawflow/chat_assistant_demo.py": 0,
+    "file:rawflow/knowledge_demo.py": 0,
+    "file:rawflow/rag_config.py": 3,
+    "file:tools/db_tools.py": 1,
+    "file:tools/markdown_tools.py": 1,
+    "file:tools/pdf_tools.py": 1,
+    "file:tools/ragflow_tools.py": 1,
+    "file:tools/tavily_tool.py": 1,
+    "file:tools/upload_file_read_tool.py": 1,
+    "file:utils/path_utils.py": 3,
+    "file:utils/word_converter.py": 1
+  },
+  "fileFanOut": {
+    "config:.env.example": 0,
+    "config:.understand-anything/config.json": 0,
+    "config:prompt/prompts.yml": 0,
+    "document:README.md": 0,
+    "document:requirements.txt": 0,
+    "file:.understand-anything/.understandignore": 0,
+    "file:agent/llm.py": 0,
+    "file:agent/main_agent.py": 10,
+    "file:agent/prompts.py": 0,
+    "file:agent/subagents/database_query_agent.py": 2,
+    "file:agent/subagents/knowledge_base_agent.py": 2,
+    "file:agent/subagents/network_search_agent.py": 2,
+    "file:api/context.py": 0,
+    "file:api/monitor.py": 1,
+    "file:api/server.py": 2,
+    "file:rawflow/chat_assistant_demo.py": 1,
+    "file:rawflow/knowledge_demo.py": 1,
+    "file:rawflow/rag_config.py": 0,
+    "file:tools/db_tools.py": 1,
+    "file:tools/markdown_tools.py": 3,
+    "file:tools/pdf_tools.py": 4,
+    "file:tools/ragflow_tools.py": 2,
+    "file:tools/tavily_tool.py": 1,
+    "file:tools/upload_file_read_tool.py": 3,
+    "file:utils/path_utils.py": 0,
+    "file:utils/word_converter.py": 0
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "fixedSectionOk": true,
+  "nodesRecovered": 0,
+  "edgesRestored": 0,
+  "crossBatchEdgesAdded": 0,
+  "typesRemapped": 0,
+  "complexityRemapped": 0,
+  "notes": [
+    "Merge report 未出现 Fixed 或 Could not fix 条目；输入与输出均为 59 nodes、148 edges，未发现需要复核的机械修复或未修复问题。",
+    "已逐项核对 scan-result.json 的 importMap：26 个键、35 条关系；35 条对应 imports 边均已存在，且 direction 为 forward、weight 为 0.7，因此无需新增跨批次边。",
+    "assembled-graph.json 未发现缺失 id、未知 node type、未知 complexity、重复节点或边、悬空引用。"
+  ]
+}

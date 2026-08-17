@@ -104,7 +104,7 @@ api/monitor.py         ← 埋点监控 + 事件循环归属判断
 ### 第一步：克隆 + 装依赖
 
 ```bash
-git clone https://github.com/你的用户名/arthur-agent.git
+git clone https://github.com/Arthur19940725/arthur-agent.git
 cd arthur-agent
 pip install -r requirements.txt
 ```
@@ -127,8 +127,8 @@ LLM_DEEPSEEK_MODEL=deepseek-v4-flash
 LLM_DEEPSEEK_PRO=deepseek-v4-pro
 
 # 必填：单用户 JWT 登录（不要提交真实密码或密钥）
-AUTH_USERNAME=demo
-AUTH_USER_ID=demo-user
+AUTH_USERNAME=arthur
+AUTH_USER_ID=arthur
 AUTH_PASSWORD_HASH=<argon2id-password-hash>
 JWT_SECRET_KEY=
 AUTH_TOKEN_EXPIRE_MINUTES=15

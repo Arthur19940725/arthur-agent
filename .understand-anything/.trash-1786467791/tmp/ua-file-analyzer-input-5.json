@@ -1,0 +1,28 @@
+{
+  "projectRoot": "D:\\code\\deep-search-pro",
+  "batchFiles": [
+    {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/config.json",
+      "language": "json",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "prompt/prompts.yml",
+      "language": "yaml",
+      "sizeLines": 73,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    ".understand-anything/.understandignore": [],
+    ".understand-anything/config.json": [],
+    "prompt/prompts.yml": []
+  }
+}

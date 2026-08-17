@@ -1,0 +1,77 @@
+[
+  {
+    "id": "layer:api-runtime",
+    "name": "API 与会话通信层",
+    "description": "承载 FastAPI 服务入口、按 thread_id 隔离的会话上下文，以及 WebSocket 连接与执行事件分发。",
+    "nodeIds": [
+      "file:api/context.py",
+      "file:api/monitor.py",
+      "file:api/server.py"
+    ]
+  },
+  {
+    "id": "layer:agent-orchestration",
+    "name": "多智能体编排层",
+    "description": "组装主 Deep Agent，并定义数据库、网络搜索和知识库三个专业子智能体及其工具路由。",
+    "nodeIds": [
+      "file:agent/main_agent.py",
+      "file:agent/subagents/database_query_agent.py",
+      "file:agent/subagents/knowledge_base_agent.py",
+      "file:agent/subagents/network_search_agent.py"
+    ]
+  },
+  {
+    "id": "layer:model-prompt-config",
+    "name": "模型与提示词配置层",
+    "description": "集中提供 LangChain 模型初始化、YAML 提示词加载、智能体 system prompt 和外部服务环境变量模板。",
+    "nodeIds": [
+      "file:agent/llm.py",
+      "file:agent/prompts.py",
+      "config:prompt/prompts.yml",
+      "config:.env.example"
+    ]
+  },
+  {
+    "id": "layer:tool-integrations",
+    "name": "工具与外部集成层",
+    "description": "把数据库、Tavily、RAGFlow、上传文件读取和 Markdown/PDF 生成能力封装为可监控的 LangChain 工具。",
+    "nodeIds": [
+      "file:tools/db_tools.py",
+      "file:tools/markdown_tools.py",
+      "file:tools/pdf_tools.py",
+      "file:tools/ragflow_tools.py",
+      "file:tools/tavily_tool.py",
+      "file:tools/upload_file_read_tool.py"
+    ]
+  },
+  {
+    "id": "layer:shared-utilities",
+    "name": "共享工具层",
+    "description": "为上层工具提供会话安全的跨平台路径解析，以及基于 Word COM 的 Markdown 到 PDF 转换基础能力。",
+    "nodeIds": [
+      "file:utils/path_utils.py",
+      "file:utils/word_converter.py"
+    ]
+  },
+  {
+    "id": "layer:ragflow-examples",
+    "name": "RAGFlow SDK 示例层",
+    "description": "保存 RAGFlow 连接配置，并以独立脚本演示知识库文档上传和聊天助手流式问答。",
+    "nodeIds": [
+      "file:rawflow/chat_assistant_demo.py",
+      "file:rawflow/knowledge_demo.py",
+      "file:rawflow/rag_config.py"
+    ]
+  },
+  {
+    "id": "layer:project-support",
+    "name": "项目文档与分析配置",
+    "description": "记录项目架构、安装与依赖信息，并配置 Understand Anything 的扫描范围和中文知识图谱输出。",
+    "nodeIds": [
+      "document:README.md",
+      "document:requirements.txt",
+      "file:.understand-anything/.understandignore",
+      "config:.understand-anything/config.json"
+    ]
+  }
+]

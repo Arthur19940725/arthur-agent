@@ -1,0 +1,2221 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "deep-search-pro",
+    "languages": [
+      "config",
+      "json",
+      "markdown",
+      "python",
+      "txt",
+      "unknown",
+      "yaml"
+    ],
+    "frameworks": [
+      "aiohttp",
+      "deepagents",
+      "FastAPI",
+      "LangChain",
+      "LangGraph",
+      "Pydantic",
+      "SQLAlchemy",
+      "Starlette",
+      "Uvicorn"
+    ],
+    "description": "Deep Search Pro 是一个不到 1000 行代码的轻量多智能体协作学习项目，基于 LangChain、LangGraph 与 deepagents 由主智能体调度网络搜索、数据库查询和 RAGFlow 知识库三个子智能体，并通过 FastAPI + WebSocket 提供任务接口和实时进度。",
+    "analyzedAt": "2026-08-11T17:01:34.2367028Z",
+    "gitCommitHash": "0ccc05826664cb2cd8d65608c1f2ebea1fdbfa30"
+  },
+  "nodes": [
+    {
+      "id": "file:agent/llm.py",
+      "type": "file",
+      "name": "llm.py",
+      "filePath": "agent/llm.py",
+      "summary": "加载项目环境变量并初始化供各智能体共享的 LangChain 聊天模型，模型名由 LLM_QWEN_MAX 配置。",
+      "tags": [
+        "llm-config",
+        "model-factory",
+        "environment",
+        "langchain"
+      ],
+      "complexity": "simple",
+      "languageNotes": "模块导入时即加载 .env 并创建模型实例，后续导入方共享该对象。"
+    },
+    {
+      "id": "file:agent/main_agent.py",
+      "type": "file",
+      "name": "main_agent.py",
+      "filePath": "agent/main_agent.py",
+      "summary": "组装主 Deep Agent、三个专业子智能体及文件处理工具，并负责按会话异步流式执行任务。执行过程中建立隔离目录与上下文，转发子智能体活动、最终答案和错误事件。",
+      "tags": [
+        "entry-point",
+        "agent-orchestration",
+        "async-streaming",
+        "session-management",
+        "service"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "使用 async generator 消费 LangGraph 流，并通过 ContextVar 辅助函数维持每个会话的目录与线程标识。"
+    },
+    {
+      "id": "function:agent/main_agent.py:run_deep_agent",
+      "type": "function",
+      "name": "run_deep_agent",
+      "filePath": "agent/main_agent.py",
+      "lineRange": [
+        56,
+        161
+      ],
+      "summary": "为指定会话准备输出与上传文件，设置会话上下文后异步流式运行主智能体，并将子智能体调用、结果或异常推送给监控层。无论成功或失败都会在 finally 中重置会话上下文。",
+      "tags": [
+        "entry-point",
+        "async-streaming",
+        "session-management",
+        "agent-runner",
+        "event-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/prompts.py",
+      "type": "file",
+      "name": "prompts.py",
+      "filePath": "agent/prompts.py",
+      "summary": "安全读取项目的 YAML 提示词配置，并在模块加载时拆分出主智能体和子智能体配置供组装模块使用。",
+      "tags": [
+        "configuration",
+        "prompt-loading",
+        "yaml",
+        "serialization"
+      ],
+      "complexity": "simple",
+      "languageNotes": "使用 yaml.safe_load 避免构造不受信任 YAML 对象，但配置读取和打印均发生在模块导入阶段。"
+    },
+    {
+      "id": "function:agent/prompts.py:load_yaml",
+      "type": "function",
+      "name": "load_yaml",
+      "filePath": "agent/prompts.py",
+      "lineRange": [
+        6,
+        15
+      ],
+      "summary": "以 UTF-8 打开指定 YAML 文件，并通过 safe_load 将内容解析为 Python 数据结构。",
+      "tags": [
+        "utility",
+        "yaml",
+        "serialization",
+        "security"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/subagents/database_query_agent.py",
+      "type": "file",
+      "name": "database_query_agent.py",
+      "filePath": "agent/subagents/database_query_agent.py",
+      "summary": "从提示词配置构造数据库查询子智能体定义，并为其注册表发现、表数据预览和自定义 SQL 查询工具。",
+      "tags": [
+        "agent-config",
+        "database",
+        "tool-registry",
+        "subagent"
+      ],
+      "complexity": "simple",
+      "languageNotes": "以普通字典声明 Deep Agents 子智能体，由主智能体组装阶段消费。"
+    },
+    {
+      "id": "file:agent/subagents/network_search_agent.py",
+      "type": "file",
+      "name": "network_search_agent.py",
+      "filePath": "agent/subagents/network_search_agent.py",
+      "summary": "从提示词配置构造网络搜索子智能体定义，并将 Tavily 搜索函数注册为其唯一工具。",
+      "tags": [
+        "agent-config",
+        "web-search",
+        "tool-registry",
+        "subagent"
+      ],
+      "complexity": "simple",
+      "languageNotes": "以普通字典声明 Deep Agents 子智能体，配置字段直接来自共享 YAML 内容。"
+    },
+    {
+      "id": "file:api/server.py",
+      "type": "file",
+      "name": "server.py",
+      "filePath": "api/server.py",
+      "summary": "提供 FastAPI 服务入口，涵盖后台启动智能体任务、上传与安全浏览输出文件、下载文件以及按 thread_id 隔离的 WebSocket 实时通信。服务启动时还会把当前事件循环绑定到连接管理器。",
+      "tags": [
+        "entry-point",
+        "api-handler",
+        "websocket",
+        "file-service",
+        "fastapi"
+      ],
+      "complexity": "complex",
+      "languageNotes": "使用 FastAPI 装饰器声明 HTTP 与 WebSocket 路由，并以 asyncio.create_task 将长耗时智能体执行移出请求响应路径。"
+    },
+    {
+      "id": "class:api/server.py:TaskRequest",
+      "type": "class",
+      "name": "TaskRequest",
+      "filePath": "api/server.py",
+      "lineRange": [
+        40,
+        42
+      ],
+      "summary": "定义启动智能体任务所需的请求模型，包含必填查询文本和可选线程标识。",
+      "tags": [
+        "data-model",
+        "validation",
+        "api-schema",
+        "pydantic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:startup_event",
+      "type": "function",
+      "name": "startup_event",
+      "filePath": "api/server.py",
+      "lineRange": [
+        45,
+        52
+      ],
+      "summary": "在 FastAPI 启动阶段获取正在运行的事件循环，并将其交给 WebSocket 连接管理器用于跨线程投递消息。",
+      "tags": [
+        "event-handler",
+        "startup",
+        "websocket",
+        "asyncio"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:run_task",
+      "type": "function",
+      "name": "run_task",
+      "filePath": "api/server.py",
+      "lineRange": [
+        56,
+        65
+      ],
+      "summary": "接受任务请求，复用或生成 thread_id，并在后台启动主智能体后立即返回任务已开始的响应。",
+      "tags": [
+        "api-handler",
+        "background-task",
+        "agent-runner",
+        "asyncio"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:upload_files",
+      "type": "function",
+      "name": "upload_files",
+      "filePath": "api/server.py",
+      "lineRange": [
+        69,
+        97
+      ],
+      "summary": "接收会话关联的多个上传文件，将其流式复制到 updated/session_<thread_id> 目录，并返回已保存文件名列表。",
+      "tags": [
+        "api-handler",
+        "file-upload",
+        "session-management",
+        "io"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:download_file",
+      "type": "function",
+      "name": "download_file",
+      "filePath": "api/server.py",
+      "lineRange": [
+        101,
+        127
+      ],
+      "summary": "解析下载路径并验证其位于 output 目录内，随后对不存在或越界路径返回错误，对有效文件返回流式下载响应。",
+      "tags": [
+        "api-handler",
+        "file-download",
+        "path-validation",
+        "security"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/server.py:list_files",
+      "type": "function",
+      "name": "list_files",
+      "filePath": "api/server.py",
+      "lineRange": [
+        131,
+        187
+      ],
+      "summary": "验证查询目录位于 output 根目录内，递归汇总文件路径、大小和修改时间，并按最新修改时间排序返回。",
+      "tags": [
+        "api-handler",
+        "file-browser",
+        "path-validation",
+        "serialization",
+        "security"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:api/server.py:websocket_endpoint",
+      "type": "function",
+      "name": "websocket_endpoint",
+      "filePath": "api/server.py",
+      "lineRange": [
+        196,
+        239
+      ],
+      "summary": "将 WebSocket 连接注册到指定 thread_id，循环接收客户端消息并回复 pong，在正常断开或异常时清理连接。",
+      "tags": [
+        "api-handler",
+        "websocket",
+        "event-loop",
+        "session-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tools/db_tools.py",
+      "type": "file",
+      "name": "db_tools.py",
+      "filePath": "tools/db_tools.py",
+      "summary": "实现供数据库子智能体调用的 MySQL 工具：读取并校验连接配置、列出数据表、预览单表数据以及执行自定义查询。查询结果统一转成 CSV 风格文本，并通过监控层上报工具调用。",
+      "tags": [
+        "database",
+        "tool-registry",
+        "mysql",
+        "serialization",
+        "monitoring"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "LangChain @tool 装饰器把普通函数暴露给智能体；数据库连接和游标使用嵌套 context manager 保证释放。"
+    },
+    {
+      "id": "function:tools/db_tools.py:get_db_config",
+      "type": "function",
+      "name": "get_db_config",
+      "filePath": "tools/db_tools.py",
+      "lineRange": [
+        11,
+        33
+      ],
+      "summary": "从环境变量组装 MySQL 连接参数、移除未配置项，并在用户、密码或数据库缺失时抛出明确错误。",
+      "tags": [
+        "configuration",
+        "database",
+        "environment",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tools/db_tools.py:list_sql_tables",
+      "type": "function",
+      "name": "list_sql_tables",
+      "filePath": "tools/db_tools.py",
+      "lineRange": [
+        36,
+        70
+      ],
+      "summary": "上报工具调用后连接 MySQL 执行 SHOW TABLES，并将表名或查询异常格式化为适合智能体消费的中文文本。",
+      "tags": [
+        "database",
+        "langchain-tool",
+        "schema-discovery",
+        "monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tools/db_tools.py:get_table_data",
+      "type": "function",
+      "name": "get_table_data",
+      "filePath": "tools/db_tools.py",
+      "lineRange": [
+        74,
+        136
+      ],
+      "summary": "查询指定表的前 100 行，依据游标元数据生成列头，并把结果序列化为 CSV 风格文本供模型理解表结构和样例数据。",
+      "tags": [
+        "database",
+        "langchain-tool",
+        "data-preview",
+        "serialization",
+        "monitoring"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tools/db_tools.py:execute_sql_query",
+      "type": "function",
+      "name": "execute_sql_query",
+      "filePath": "tools/db_tools.py",
+      "lineRange": [
+        140,
+        201
+      ],
+      "summary": "执行调用方提供的 SQL 查询，将有结果集的列名和数据序列化为 CSV 风格文本，并把空结果或 MySQL 异常转换为说明文本。",
+      "tags": [
+        "database",
+        "langchain-tool",
+        "sql-query",
+        "serialization",
+        "monitoring"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tools/tavily_tool.py",
+      "type": "file",
+      "name": "tavily_tool.py",
+      "filePath": "tools/tavily_tool.py",
+      "summary": "从环境变量初始化 Tavily 客户端，并暴露带主题、结果数量和原始内容开关的 LangChain 网络搜索工具。每次搜索前都会向监控层报告调用参数。",
+      "tags": [
+        "web-search",
+        "langchain-tool",
+        "tavily",
+        "monitoring",
+        "service"
+      ],
+      "complexity": "simple",
+      "languageNotes": "使用 Literal 将 topic 限定为 news、finance 或 general，便于工具 schema 向模型表达允许值。"
+    },
+    {
+      "id": "function:tools/tavily_tool.py:internet_search",
+      "type": "function",
+      "name": "internet_search",
+      "filePath": "tools/tavily_tool.py",
+      "lineRange": [
+        28,
+        50
+      ],
+      "summary": "记录搜索调用后将查询、主题、最大结果数和原始内容选项转发给 Tavily 客户端，并原样返回搜索结果。",
+      "tags": [
+        "web-search",
+        "langchain-tool",
+        "api-client",
+        "monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:api/context.py",
+      "type": "file",
+      "name": "context.py",
+      "filePath": "api/context.py",
+      "summary": "使用 ContextVar 隔离每个异步请求的会话目录与 thread ID，并提供设置、读取和重置上下文的辅助函数。",
+      "tags": [
+        "异步上下文",
+        "会话隔离",
+        "contextvar",
+        "状态管理"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "利用 Python ContextVar 在同一 asyncio 线程内实现协程级状态隔离，避免并发请求之间的数据串扰。"
+    },
+    {
+      "id": "function:api/context.py:set_session_context",
+      "type": "function",
+      "name": "set_session_context",
+      "filePath": "api/context.py",
+      "lineRange": [
+        40,
+        48
+      ],
+      "summary": "把会话目录写入当前协程上下文，并返回可供后续重置状态使用的 Token。",
+      "tags": [
+        "上下文设置",
+        "会话目录",
+        "contextvar"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/context.py:get_session_context",
+      "type": "function",
+      "name": "get_session_context",
+      "filePath": "api/context.py",
+      "lineRange": [
+        51,
+        56
+      ],
+      "summary": "读取当前请求链路的会话目录，使深层工具无需显式传递该参数。",
+      "tags": [
+        "上下文读取",
+        "会话目录",
+        "contextvar"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/context.py:set_thread_context",
+      "type": "function",
+      "name": "set_thread_context",
+      "filePath": "api/context.py",
+      "lineRange": [
+        59,
+        63
+      ],
+      "summary": "把当前会话的 thread ID 写入协程上下文，并返回对应的状态 Token。",
+      "tags": [
+        "上下文设置",
+        "thread-id",
+        "会话路由"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/context.py:get_thread_context",
+      "type": "function",
+      "name": "get_thread_context",
+      "filePath": "api/context.py",
+      "lineRange": [
+        66,
+        70
+      ],
+      "summary": "获取当前请求链路的 thread ID，供监控消息定向发送到对应 WebSocket。",
+      "tags": [
+        "上下文读取",
+        "thread-id",
+        "消息路由"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:api/context.py:reset_session_context",
+      "type": "function",
+      "name": "reset_session_context",
+      "filePath": "api/context.py",
+      "lineRange": [
+        73,
+        80
+      ],
+      "summary": "使用调用方保存的 Token 恢复会话目录，并按需恢复 thread ID，防止请求结束后遗留上下文。",
+      "tags": [
+        "上下文重置",
+        "资源清理",
+        "会话隔离"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:api/monitor.py",
+      "type": "file",
+      "name": "monitor.py",
+      "filePath": "api/monitor.py",
+      "summary": "集中管理工具与智能体执行事件，将监控消息按 thread ID 推送到 FastAPI WebSocket、脚本流输出和控制台。还维护 thread ID 到活动 WebSocket 的连接映射。",
+      "tags": [
+        "监控",
+        "websocket",
+        "事件分发",
+        "单例模式"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "模块同时处理同一事件循环与跨线程事件循环：前者使用 create_task，后者使用 asyncio.run_coroutine_threadsafe。"
+    },
+    {
+      "id": "class:api/monitor.py:ToolMonitor",
+      "type": "class",
+      "name": "ToolMonitor",
+      "filePath": "api/monitor.py",
+      "lineRange": [
+        14,
+        118
+      ],
+      "summary": "以单例形式封装监控事件上报，根据当前 thread ID 和事件循环选择 WebSocket 投递方式，并兼容 DeepAgents 脚本运行时输出。",
+      "tags": [
+        "监控器",
+        "单例模式",
+        "事件分发",
+        "异步通信"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:api/monitor.py:ConnectionManager",
+      "type": "class",
+      "name": "ConnectionManager",
+      "filePath": "api/monitor.py",
+      "lineRange": [
+        125,
+        154
+      ],
+      "summary": "维护 thread ID 与活动 WebSocket 的映射，负责连接生命周期、事件循环绑定及定向消息发送。",
+      "tags": [
+        "连接管理",
+        "websocket",
+        "会话路由",
+        "异步通信"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tools/markdown_tools.py",
+      "type": "file",
+      "name": "markdown_tools.py",
+      "filePath": "tools/markdown_tools.py",
+      "summary": "提供 LangChain Markdown 生成工具，在会话目录约束下解析输出路径、创建父目录并以 UTF-8 写入文档，同时上报执行状态。",
+      "tags": [
+        "langchain-tool",
+        "markdown",
+        "文件生成",
+        "路径隔离"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tools/markdown_tools.py:generate_markdown",
+      "type": "function",
+      "name": "generate_markdown",
+      "filePath": "tools/markdown_tools.py",
+      "lineRange": [
+        16,
+        59
+      ],
+      "summary": "规范化 Markdown 文件名，将目标路径解析到当前会话目录后创建目录并写入内容，以中文消息返回成功或异常结果。",
+      "tags": [
+        "langchain-tool",
+        "markdown",
+        "文件写入",
+        "错误处理"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tools/pdf_tools.py",
+      "type": "file",
+      "name": "pdf_tools.py",
+      "filePath": "tools/pdf_tools.py",
+      "summary": "提供 Markdown 转 PDF 的 LangChain 工具，负责会话内路径解析、源文件校验与输出路径选择，再委托 Word COM 转换器执行实际转换。",
+      "tags": [
+        "langchain-tool",
+        "pdf",
+        "文档转换",
+        "路径隔离"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tools/pdf_tools.py:convert_md_to_pdf",
+      "type": "function",
+      "name": "convert_md_to_pdf",
+      "filePath": "tools/pdf_tools.py",
+      "lineRange": [
+        18,
+        50
+      ],
+      "summary": "把 Markdown 输入和可选 PDF 输出解析为会话内绝对路径，校验源文件后调用 Word 引擎转换，并将异常转换为工具可读结果。",
+      "tags": [
+        "langchain-tool",
+        "pdf",
+        "路径解析",
+        "错误处理"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tools/upload_file_read_tool.py",
+      "type": "file",
+      "name": "upload_file_read_tool.py",
+      "filePath": "tools/upload_file_read_tool.py",
+      "summary": "提供会话隔离的上传文件读取工具，按扩展名处理文本、Word、PDF 与 Excel，并对可选依赖缺失和读取失败返回明确错误。",
+      "tags": [
+        "langchain-tool",
+        "文件读取",
+        "多格式解析",
+        "可选依赖"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tools/upload_file_read_tool.py:read_file_content",
+      "type": "function",
+      "name": "read_file_content",
+      "filePath": "tools/upload_file_read_tool.py",
+      "lineRange": [
+        37,
+        105
+      ],
+      "summary": "解析当前会话中的目标文件，根据扩展名提取文本或生成 Excel 预览与统计信息，并对缺失依赖、不支持格式和读取异常进行分支处理。",
+      "tags": [
+        "langchain-tool",
+        "内容提取",
+        "格式分派",
+        "错误处理"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:utils/path_utils.py",
+      "type": "file",
+      "name": "path_utils.py",
+      "filePath": "utils/path_utils.py",
+      "summary": "统一清洗虚拟路径前缀，并结合会话目录解析 Windows、Unix 风格及上传目录路径，避免重复嵌套会话目录。",
+      "tags": [
+        "路径解析",
+        "会话隔离",
+        "跨平台",
+        "路径规范化"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "文件中同名 resolve_path 被定义两次，后一个定义会覆盖前一个；结构图采用实际生效且包含完整逻辑的第二个定义。"
+    },
+    {
+      "id": "function:utils/path_utils.py:resolve_path",
+      "type": "function",
+      "name": "resolve_path",
+      "filePath": "utils/path_utils.py",
+      "lineRange": [
+        11,
+        113
+      ],
+      "summary": "清洗虚拟前缀和 updated 路径，按是否存在会话目录及路径类型解析最终绝对路径，并修正重复会话目录嵌套。",
+      "tags": [
+        "路径解析",
+        "路径规范化",
+        "会话隔离",
+        "跨平台"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:utils/word_converter.py",
+      "type": "file",
+      "name": "word_converter.py",
+      "filePath": "utils/word_converter.py",
+      "summary": "通过 Markdown 转临时 HTML、再调用 Microsoft Word COM 导出 PDF，并在 finally 中关闭 Word、删除临时文件和释放 COM。",
+      "tags": [
+        "文档转换",
+        "word-com",
+        "pdf",
+        "资源清理"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "这是 Windows 专属的 COM 自动化流程，显式使用 CoInitialize 和 CoUninitialize 管理当前线程的 COM 生命周期。"
+    },
+    {
+      "id": "function:utils/word_converter.py:convert_md_to_pdf_via_word",
+      "type": "function",
+      "name": "convert_md_to_pdf_via_word",
+      "filePath": "utils/word_converter.py",
+      "lineRange": [
+        14,
+        87
+      ],
+      "summary": "将 Markdown 渲染成带基础样式的临时 HTML，驱动 Microsoft Word 保存为 PDF，并在成功、失败及清理阶段返回或记录明确结果。",
+      "tags": [
+        "markdown",
+        "word-com",
+        "pdf-导出",
+        "资源清理"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/subagents/knowledge_base_agent.py",
+      "type": "file",
+      "name": "knowledge_base_agent.py",
+      "filePath": "agent/subagents/knowledge_base_agent.py",
+      "summary": "根据 YAML 提示词配置组装知识库子智能体描述，并注册 RAGFlow 助手发现与问答工具，供主智能体协作调用。",
+      "tags": [
+        "subagent",
+        "ragflow",
+        "configuration",
+        "tool-registration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:rawflow/chat_assistant_demo.py",
+      "type": "file",
+      "name": "chat_assistant_demo.py",
+      "filePath": "rawflow/chat_assistant_demo.py",
+      "summary": "演示通过 RAGFlow SDK 枚举聊天助手及其知识库，并以临时会话执行一次流式问答后清理会话。",
+      "tags": [
+        "ragflow",
+        "demo",
+        "knowledge-retrieval",
+        "session-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:rawflow/chat_assistant_demo.py:get_assistant_list",
+      "type": "function",
+      "name": "get_assistant_list",
+      "filePath": "rawflow/chat_assistant_demo.py",
+      "lineRange": [
+        13,
+        32
+      ],
+      "summary": "查询全部 RAGFlow 聊天助手，汇总各助手关联的知识库名称并返回便于阅读的文本。",
+      "tags": [
+        "ragflow",
+        "assistant-discovery",
+        "knowledge-base",
+        "formatting"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:rawflow/chat_assistant_demo.py:ask_question",
+      "type": "function",
+      "name": "ask_question",
+      "filePath": "rawflow/chat_assistant_demo.py",
+      "lineRange": [
+        35,
+        67
+      ],
+      "summary": "按名称选取聊天助手，创建临时会话消费流式回答，并在返回最终内容前删除该会话。",
+      "tags": [
+        "ragflow",
+        "question-answering",
+        "streaming",
+        "session-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:rawflow/knowledge_demo.py",
+      "type": "file",
+      "name": "knowledge_demo.py",
+      "filePath": "rawflow/knowledge_demo.py",
+      "summary": "演示使用 RAGFlow SDK 创建知识库，并将多个本地文件读取为二进制文档后上传到指定知识库。",
+      "tags": [
+        "ragflow",
+        "demo",
+        "knowledge-base",
+        "file-upload"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:rawflow/knowledge_demo.py:create_knowledge_base",
+      "type": "function",
+      "name": "create_knowledge_base",
+      "filePath": "rawflow/knowledge_demo.py",
+      "lineRange": [
+        13,
+        22
+      ],
+      "summary": "使用给定名称和描述创建采用通义千问 embedding 模型的 RAGFlow 知识库，并输出创建结果。",
+      "tags": [
+        "ragflow",
+        "knowledge-base",
+        "dataset-creation",
+        "embedding"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:rawflow/knowledge_demo.py:upload_file_to_knowledge_base",
+      "type": "function",
+      "name": "upload_file_to_knowledge_base",
+      "filePath": "rawflow/knowledge_demo.py",
+      "lineRange": [
+        30,
+        51
+      ],
+      "summary": "按知识库 ID 获取数据集，将本地文件读取并封装为文档对象后批量上传。",
+      "tags": [
+        "ragflow",
+        "file-upload",
+        "binary-io",
+        "document-ingestion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:rawflow/rag_config.py",
+      "type": "file",
+      "name": "rag_config.py",
+      "filePath": "rawflow/rag_config.py",
+      "summary": "集中加载 RAGFlow 连接配置，优先读取模块目录下的 `.env`，否则采用 dotenv 默认搜索与系统环境变量。",
+      "tags": [
+        "configuration",
+        "environment-variables",
+        "ragflow",
+        "dotenv"
+      ],
+      "complexity": "simple",
+      "languageNotes": "使用 Optional 类型标注显式表示缺失环境变量时可能返回 None。"
+    },
+    {
+      "id": "function:rawflow/rag_config.py:_load_ragflow_env",
+      "type": "function",
+      "name": "_load_ragflow_env",
+      "filePath": "rawflow/rag_config.py",
+      "lineRange": [
+        5,
+        20
+      ],
+      "summary": "加载 dotenv 配置并读取 RAGFLOW_API_KEY 与 RAGFLOW_API_URL，返回两个可空字符串。",
+      "tags": [
+        "configuration",
+        "environment-variables",
+        "ragflow",
+        "dotenv"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tools/ragflow_tools.py",
+      "type": "file",
+      "name": "ragflow_tools.py",
+      "filePath": "tools/ragflow_tools.py",
+      "summary": "将 RAGFlow 助手发现和临时会话问答封装为 LangChain 工具，同时上报工具调用进度并把异常转为模型可消费的文本。",
+      "tags": [
+        "langchain-tool",
+        "ragflow",
+        "monitoring",
+        "knowledge-retrieval",
+        "error-handling"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "通过 @tool 装饰同步 Python 函数，使其作为带文档说明的 LangChain 工具暴露给智能体。"
+    },
+    {
+      "id": "function:tools/ragflow_tools.py:get_assistant_list",
+      "type": "function",
+      "name": "get_assistant_list",
+      "filePath": "tools/ragflow_tools.py",
+      "lineRange": [
+        18,
+        54
+      ],
+      "summary": "上报工具调用后查询 RAGFlow 助手及关联知识库，并以稳定的文本结果表达成功、空列表或异常状态。",
+      "tags": [
+        "langchain-tool",
+        "ragflow",
+        "assistant-discovery",
+        "monitoring",
+        "error-handling"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tools/ragflow_tools.py:create_ask_delete",
+      "type": "function",
+      "name": "create_ask_delete",
+      "filePath": "tools/ragflow_tools.py",
+      "lineRange": [
+        58,
+        92
+      ],
+      "summary": "上报问答工具参数，创建临时 RAGFlow 会话消费流式响应，并在删除会话后返回最终内容或错误文本。",
+      "tags": [
+        "langchain-tool",
+        "ragflow",
+        "question-answering",
+        "session-management",
+        "error-handling"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.env.example",
+      "type": "config",
+      "name": ".env.example",
+      "filePath": ".env.example",
+      "summary": "提供项目运行所需的环境变量模板，覆盖 OpenAI-compatible LLM、Tavily、RAGFlow 与 MySQL 的连接和模型配置。文件仅包含占位值，供用户复制为 .env 后填写真实配置。",
+      "tags": [
+        "configuration",
+        "environment-variables",
+        "service-integration",
+        "credentials-template"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "面向学习者介绍 Deep Search Pro 的多智能体架构、请求数据流、安装配置、启动方式与推荐源码阅读顺序。文档还索引核心模块，并给出分级改造练习、技术栈说明和常见问题。",
+      "tags": [
+        "documentation",
+        "entry-point",
+        "architecture-overview",
+        "getting-started",
+        "learning-project"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:requirements.txt",
+      "type": "document",
+      "name": "requirements.txt",
+      "filePath": "requirements.txt",
+      "summary": "以精确版本锁定项目的 Python 运行依赖，覆盖 FastAPI 服务、deepagents/LangChain/LangGraph 编排、模型接入、Tavily/RAGFlow/MySQL 集成以及 Markdown、Word 和 PDF 文档处理。",
+      "tags": [
+        "dependency-management",
+        "version-pinning",
+        "python",
+        "runtime-environment"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "采用 pip requirements 的 == 精确锁定形式，同时列出顶层依赖和大量传递依赖。"
+    },
+    {
+      "id": "file:.understand-anything/.understandignore",
+      "type": "file",
+      "name": ".understandignore",
+      "filePath": ".understand-anything/.understandignore",
+      "summary": "定义 Understand Anything 扫描时的排除规则与可选模式，当前主动忽略环境目录、输出目录和测试会话目录等内容。",
+      "tags": [
+        "configuration",
+        "analysis-scope",
+        "ignore-rules"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.understand-anything/config.json",
+      "type": "config",
+      "name": "config.json",
+      "filePath": ".understand-anything/config.json",
+      "summary": "设置 Understand Anything 的输出语言为中文，用于统一生成的代码库分析文本。",
+      "tags": [
+        "configuration",
+        "localization",
+        "knowledge-graph"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:prompt/prompts.yml",
+      "type": "config",
+      "name": "prompts.yml",
+      "filePath": "prompt/prompts.yml",
+      "summary": "集中定义空调企业场景下主智能体以及网络搜索、数据库查询和 RAGFlow 三类子智能体的 system prompt。配置同时约束工具路由、检索步骤、工作目录和文档生成顺序。",
+      "tags": [
+        "configuration",
+        "prompt-engineering",
+        "multi-agent",
+        "tool-routing",
+        "guardrails"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "YAML 通过多行块标量保存较长的中文 system prompt，并以 main_agent 与 sub_agents 两个顶层映射组织角色配置。"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "function:agent/main_agent.py:run_deep_agent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/prompts.py",
+      "target": "function:agent/prompts.py:load_yaml",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "class:api/server.py:TaskRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:startup_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:run_task",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:upload_files",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:download_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:list_files",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:websocket_endpoint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:list_sql_tables",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:get_table_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:execute_sql_query",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/tavily_tool.py",
+      "target": "function:tools/tavily_tool.py:internet_search",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "function:agent/main_agent.py:run_deep_agent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/prompts.py",
+      "target": "function:agent/prompts.py:load_yaml",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "class:api/server.py:TaskRequest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:startup_event",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:run_task",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:upload_files",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:download_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:list_files",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "function:api/server.py:websocket_endpoint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:list_sql_tables",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:get_table_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "function:tools/db_tools.py:execute_sql_query",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/tavily_tool.py",
+      "target": "function:tools/tavily_tool.py:internet_search",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/llm.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/database_query_agent.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/knowledge_base_agent.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:agent/subagents/network_search_agent.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:api/context.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/markdown_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/pdf_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/main_agent.py",
+      "target": "file:tools/upload_file_read_tool.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/database_query_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/database_query_agent.py",
+      "target": "file:tools/db_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/network_search_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/network_search_agent.py",
+      "target": "file:tools/tavily_tool.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "file:agent/main_agent.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:api/server.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/db_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/tavily_tool.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:agent/main_agent.py:run_deep_agent",
+      "target": "function:api/context.py:set_session_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/main_agent.py:run_deep_agent",
+      "target": "function:api/context.py:set_thread_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/main_agent.py:run_deep_agent",
+      "target": "function:api/context.py:reset_session_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:api/server.py:run_task",
+      "target": "function:agent/main_agent.py:run_deep_agent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/db_tools.py:list_sql_tables",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/db_tools.py:get_table_data",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/db_tools.py:execute_sql_query",
+      "target": "function:tools/db_tools.py:get_db_config",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:set_session_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:get_session_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:set_thread_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:get_thread_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:reset_session_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:set_session_context",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:get_session_context",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:set_thread_context",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:get_thread_context",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/context.py",
+      "target": "function:api/context.py:reset_session_context",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/monitor.py",
+      "target": "class:api/monitor.py:ToolMonitor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/monitor.py",
+      "target": "class:api/monitor.py:ConnectionManager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:api/monitor.py",
+      "target": "class:api/monitor.py:ToolMonitor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/monitor.py",
+      "target": "class:api/monitor.py:ConnectionManager",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:api/monitor.py",
+      "target": "file:api/context.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:api/monitor.py:ToolMonitor",
+      "target": "function:api/context.py:get_thread_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "function:tools/markdown_tools.py:generate_markdown",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "function:tools/markdown_tools.py:generate_markdown",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "file:api/context.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/markdown_tools.py",
+      "target": "file:utils/path_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:tools/markdown_tools.py:generate_markdown",
+      "target": "function:api/context.py:get_session_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/markdown_tools.py:generate_markdown",
+      "target": "function:utils/path_utils.py:resolve_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "function:tools/pdf_tools.py:convert_md_to_pdf",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "function:tools/pdf_tools.py:convert_md_to_pdf",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:api/context.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:utils/path_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/pdf_tools.py",
+      "target": "file:utils/word_converter.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:tools/pdf_tools.py:convert_md_to_pdf",
+      "target": "function:api/context.py:get_session_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/pdf_tools.py:convert_md_to_pdf",
+      "target": "function:utils/path_utils.py:resolve_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/pdf_tools.py:convert_md_to_pdf",
+      "target": "function:utils/word_converter.py:convert_md_to_pdf_via_word",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "function:tools/upload_file_read_tool.py:read_file_content",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "function:tools/upload_file_read_tool.py:read_file_content",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "file:api/context.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/upload_file_read_tool.py",
+      "target": "file:utils/path_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:tools/upload_file_read_tool.py:read_file_content",
+      "target": "function:api/context.py:get_session_context",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tools/upload_file_read_tool.py:read_file_content",
+      "target": "function:utils/path_utils.py:resolve_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/path_utils.py",
+      "target": "function:utils/path_utils.py:resolve_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:utils/path_utils.py",
+      "target": "function:utils/path_utils.py:resolve_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/word_converter.py",
+      "target": "function:utils/word_converter.py:convert_md_to_pdf_via_word",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:utils/word_converter.py",
+      "target": "function:utils/word_converter.py:convert_md_to_pdf_via_word",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/subagents/knowledge_base_agent.py",
+      "target": "file:agent/prompts.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/subagents/knowledge_base_agent.py",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "file:api/monitor.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "file:rawflow/rag_config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "function:rawflow/chat_assistant_demo.py:get_assistant_list",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "function:rawflow/chat_assistant_demo.py:ask_question",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "function:rawflow/knowledge_demo.py:create_knowledge_base",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "function:rawflow/knowledge_demo.py:upload_file_to_knowledge_base",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/rag_config.py",
+      "target": "function:rawflow/rag_config.py:_load_ragflow_env",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "function:tools/ragflow_tools.py:get_assistant_list",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "function:tools/ragflow_tools.py:create_ask_delete",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "function:rawflow/chat_assistant_demo.py:get_assistant_list",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:rawflow/chat_assistant_demo.py",
+      "target": "function:rawflow/chat_assistant_demo.py:ask_question",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "function:rawflow/knowledge_demo.py:create_knowledge_base",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:rawflow/knowledge_demo.py",
+      "target": "function:rawflow/knowledge_demo.py:upload_file_to_knowledge_base",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:rawflow/rag_config.py",
+      "target": "function:rawflow/rag_config.py:_load_ragflow_env",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "function:tools/ragflow_tools.py:get_assistant_list",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tools/ragflow_tools.py",
+      "target": "function:tools/ragflow_tools.py:create_ask_delete",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:agent/llm.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:rawflow/rag_config.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:tools/tavily_tool.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:tools/db_tools.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/llm.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/prompts.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/main_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/subagents/network_search_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/subagents/database_query_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/subagents/knowledge_base_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:api/server.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:api/context.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:api/monitor.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "config:prompt/prompts.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/tavily_tool.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/db_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/markdown_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/pdf_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:tools/upload_file_read_tool.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:utils/path_utils.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:utils/word_converter.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "document:requirements.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "config:.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:agent/main_agent.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:api/server.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:tools/tavily_tool.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:tools/db_tools.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:tools/ragflow_tools.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:tools/pdf_tools.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:.understand-anything/config.json",
+      "target": "file:.understand-anything/.understandignore",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:api-runtime",
+      "name": "API 与会话通信层",
+      "description": "承载 FastAPI 服务入口、按 thread_id 隔离的会话上下文，以及 WebSocket 连接与执行事件分发。",
+      "nodeIds": [
+        "file:api/context.py",
+        "file:api/monitor.py",
+        "file:api/server.py"
+      ]
+    },
+    {
+      "id": "layer:agent-orchestration",
+      "name": "多智能体编排层",
+      "description": "组装主 Deep Agent，并定义数据库、网络搜索和知识库三个专业子智能体及其工具路由。",
+      "nodeIds": [
+        "file:agent/main_agent.py",
+        "file:agent/subagents/database_query_agent.py",
+        "file:agent/subagents/knowledge_base_agent.py",
+        "file:agent/subagents/network_search_agent.py"
+      ]
+    },
+    {
+      "id": "layer:model-prompt-config",
+      "name": "模型与提示词配置层",
+      "description": "集中提供 LangChain 模型初始化、YAML 提示词加载、智能体 system prompt 和外部服务环境变量模板。",
+      "nodeIds": [
+        "file:agent/llm.py",
+        "file:agent/prompts.py",
+        "config:prompt/prompts.yml",
+        "config:.env.example"
+      ]
+    },
+    {
+      "id": "layer:tool-integrations",
+      "name": "工具与外部集成层",
+      "description": "把数据库、Tavily、RAGFlow、上传文件读取和 Markdown/PDF 生成能力封装为可监控的 LangChain 工具。",
+      "nodeIds": [
+        "file:tools/db_tools.py",
+        "file:tools/markdown_tools.py",
+        "file:tools/pdf_tools.py",
+        "file:tools/ragflow_tools.py",
+        "file:tools/tavily_tool.py",
+        "file:tools/upload_file_read_tool.py"
+      ]
+    },
+    {
+      "id": "layer:shared-utilities",
+      "name": "共享工具层",
+      "description": "为上层工具提供会话安全的跨平台路径解析，以及基于 Word COM 的 Markdown 到 PDF 转换基础能力。",
+      "nodeIds": [
+        "file:utils/path_utils.py",
+        "file:utils/word_converter.py"
+      ]
+    },
+    {
+      "id": "layer:ragflow-examples",
+      "name": "RAGFlow SDK 示例层",
+      "description": "保存 RAGFlow 连接配置，并以独立脚本演示知识库文档上传和聊天助手流式问答。",
+      "nodeIds": [
+        "file:rawflow/chat_assistant_demo.py",
+        "file:rawflow/knowledge_demo.py",
+        "file:rawflow/rag_config.py"
+      ]
+    },
+    {
+      "id": "layer:project-support",
+      "name": "项目文档与分析配置",
+      "description": "记录项目架构、安装与依赖信息，并配置 Understand Anything 的扫描范围和中文知识图谱输出。",
+      "nodeIds": [
+        "document:README.md",
+        "document:requirements.txt",
+        "file:.understand-anything/.understandignore",
+        "config:.understand-anything/config.json"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "项目全景",
+      "description": "先从 README 建立 Deep Search Pro 的整体心智模型：这是一个用小型完整项目讲解 Orchestrator 多智能体协作的学习工程。文档给出了从 API 请求、主智能体调度、专业工具执行到 Markdown/PDF 产出的阅读地图，为后续逐层进入代码提供坐标。",
+      "nodeIds": [
+        "document:README.md"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "服务入口",
+      "description": "沿着 README 的数据流进入 api/server.py，它是实际运行入口，也是 HTTP、文件接口与 WebSocket 会合的地方。FastAPI 接收任务后在后台启动智能体执行，并按 thread_id 管理实时连接，因此这里最适合观察一次请求如何进入系统。服务启动时还会把事件循环交给连接管理器，为后面的跨模块进度推送做好准备。",
+      "nodeIds": [
+        "file:api/server.py"
+      ],
+      "languageLesson": "Python 的 async/await 让 HTTP 后台任务和 WebSocket 长连接在同一事件循环中协作；FastAPI decorator 则把普通异步函数声明为路由或生命周期处理器。"
+    },
+    {
+      "order": 3,
+      "title": "编排与事件",
+      "description": "从服务入口继续到主编排器：main_agent.py 组装主智能体、三个专业子智能体和文件工具，并负责按会话流式执行任务。monitor.py 是被依赖最多的文件，它把智能体与工具事件统一送往 WebSocket、脚本流或控制台。两者共同形成“执行逻辑与可观测事件分离”的主干，让前端能看到长任务的实时进展。",
+      "nodeIds": [
+        "file:agent/main_agent.py",
+        "file:api/monitor.py"
+      ],
+      "languageLesson": "async/await 适合等待模型、网络和数据库等 I/O；将执行事件集中转发，可以避免每个工具各自处理 WebSocket 连接。"
+    },
+    {
+      "order": 4,
+      "title": "模型与提示词",
+      "description": "编排器的行为由模型初始化、YAML 提示词和环境配置共同决定：llm.py 创建共享聊天模型，prompts.py 加载并拆分主智能体与子智能体配置。prompts.yml 明确工具路由、检索步骤和文档生成顺序，.env.example 与 requirements.txt 则说明外部服务参数和精确依赖版本。读完这一站，就能区分代码中的稳定机制与配置中的可调整策略。",
+      "nodeIds": [
+        "file:agent/llm.py",
+        "file:agent/prompts.py",
+        "config:prompt/prompts.yml",
+        "config:.env.example",
+        "document:requirements.txt"
+      ],
+      "languageLesson": "YAML 适合表达分层的 system prompt 配置，但缩进本身就是语法；Python 模块在首次 import 时执行顶层初始化，因此共享模型和提示词的创建时机会影响所有导入方。"
+    },
+    {
+      "order": 5,
+      "title": "会话与路径隔离",
+      "description": "有了执行和配置基础后，再看并发任务如何避免互相污染：context.py 用 ContextVar 保存当前 thread ID 与会话目录。path_utils.py 把不同平台和虚拟前缀的路径统一解析到该会话范围内，upload_file_read_tool.py 再在这个边界内读取多种上传文件。三者一起承担隔离与路径安全责任，是多用户异步服务能够可靠运行的底座。",
+      "nodeIds": [
+        "file:api/context.py",
+        "file:utils/path_utils.py",
+        "file:tools/upload_file_read_tool.py"
+      ],
+      "languageLesson": "ContextVar 会随异步任务传播上下文，却不会像普通全局变量那样让并发请求共享同一份可变状态；使用 token 重置上下文可避免请求结束后的状态泄漏。"
+    },
+    {
+      "order": 6,
+      "title": "三个专业子智能体",
+      "description": "在安全的会话边界内，主智能体把不同信息源交给网络搜索、数据库查询和知识库三个专业子智能体。每个模块从同一套提示词配置取得角色描述，再只注册与自身职责相符的工具。这个分工展示了 Orchestrator 模式的核心：主智能体负责路由与综合，子智能体负责受限领域内的执行。",
+      "nodeIds": [
+        "file:agent/subagents/network_search_agent.py",
+        "file:agent/subagents/database_query_agent.py",
+        "file:agent/subagents/knowledge_base_agent.py"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "外部检索工具",
+      "description": "三个子智能体最终通过工具模块访问真实数据源：tavily_tool.py 负责网络搜索，db_tools.py 负责 MySQL 表发现、预览与查询，ragflow_tools.py 负责 RAGFlow 助手发现和问答。rag_config.py 补充 RAGFlow 的连接配置来源，而各工具都会把调用进度交回前面的监控层。由此可以完整追踪“主智能体决策—子智能体执行—工具访问外部系统—事件回传”的闭环。",
+      "nodeIds": [
+        "file:tools/tavily_tool.py",
+        "file:tools/db_tools.py",
+        "file:tools/ragflow_tools.py",
+        "file:rawflow/rag_config.py"
+      ],
+      "languageLesson": "LangChain 的 @tool decorator 会把 Python 函数包装成模型可调用工具；清晰的参数、返回文本和错误信息共同构成模型与外部系统之间的接口契约。"
+    },
+    {
+      "order": 8,
+      "title": "报告生成链路",
+      "description": "检索结果汇总后，markdown_tools.py 在会话目录内生成 Markdown，pdf_tools.py 校验输入与输出路径后触发 PDF 转换。word_converter.py 完成 Markdown 到临时 HTML、再由 Word COM 导出 PDF 的平台相关工作，并负责释放资源。这个分层把智能体可调用接口、路径安全和底层格式转换拆开，使报告产出既可监控又便于定位故障。",
+      "nodeIds": [
+        "file:tools/markdown_tools.py",
+        "file:tools/pdf_tools.py",
+        "file:utils/word_converter.py"
+      ],
+      "languageLesson": "Python 的 try/finally 用于保证 Word 进程、临时文件和 COM 资源即使在转换失败时也能清理，是外部资源管理的重要模式。"
+    },
+    {
+      "order": 9,
+      "title": "RAGFlow 实践入口",
+      "description": "最后用两个独立示例把知识库集成拆成可观察的小实验：knowledge_demo.py 演示创建知识库并上传本地文档，chat_assistant_demo.py 演示枚举助手、建立临时会话和流式问答。它们与正式工具链分开，适合在理解主系统后验证 RAGFlow SDK 的原始能力。完成这一步，就能从底层示例反向解释第 7 步的工具封装为何存在。",
+      "nodeIds": [
+        "file:rawflow/knowledge_demo.py",
+        "file:rawflow/chat_assistant_demo.py"
+      ]
+    }
+  ]
+}

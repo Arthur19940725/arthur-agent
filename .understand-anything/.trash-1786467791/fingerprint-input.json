@@ -1,0 +1,32 @@
+{
+  "projectRoot": "D:\\code\\deep-search-pro",
+  "sourceFilePaths": [
+    ".env.example",
+    ".understand-anything/.understandignore",
+    ".understand-anything/config.json",
+    "agent/llm.py",
+    "agent/main_agent.py",
+    "agent/prompts.py",
+    "agent/subagents/database_query_agent.py",
+    "agent/subagents/knowledge_base_agent.py",
+    "agent/subagents/network_search_agent.py",
+    "api/context.py",
+    "api/monitor.py",
+    "api/server.py",
+    "prompt/prompts.yml",
+    "rawflow/chat_assistant_demo.py",
+    "rawflow/knowledge_demo.py",
+    "rawflow/rag_config.py",
+    "README.md",
+    "requirements.txt",
+    "tools/db_tools.py",
+    "tools/markdown_tools.py",
+    "tools/pdf_tools.py",
+    "tools/ragflow_tools.py",
+    "tools/tavily_tool.py",
+    "tools/upload_file_read_tool.py",
+    "utils/path_utils.py",
+    "utils/word_converter.py"
+  ],
+  "gitCommitHash": "0ccc05826664cb2cd8d65608c1f2ebea1fdbfa30"
+}
