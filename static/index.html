@@ -704,7 +704,7 @@
           <span class="section-state" id="auth-state">需要登录</span>
         </div>
 
-        <form id="login" novalidate>
+        <form id="login" method="post" action="/api/login" novalidate>
           <div class="field-row">
             <div class="field">
               <label for="username">用户名</label>
@@ -1206,6 +1206,7 @@
     elements.approvalApprove.addEventListener("click", () => submitApproval("approve"));
     elements.approvalReject.addEventListener("click", () => submitApproval("reject"));
 
+    elements.queryForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const query = elements.query.value.trim();
       const taskIsActive = state.task === "submitting" || state.task === "running";
