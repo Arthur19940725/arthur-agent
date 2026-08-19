@@ -174,15 +174,15 @@ async def run_deep_agent(main_agent, task_query, session_id, resume_decisions=No
 
     if resume_decisions is None:
         path_instruction = f"""
-        【工作环境指令】
-        工作目录: {relative_session_dir_str}
+        【当前会话工作区】
+        工作目录标识: {relative_session_dir_str}
         {updated_info_prompt}
 
-        规则：
-        1. 新生成文件必须保存到工作目录：'{relative_session_dir_str}/filename'
-        2. 读取已上传的文件时，请直接将文件名（例如：'开篇.txt'）作为 filename 参数传入（read_file_content）读取工具，不要带上任何目录前缀。
-        3. 使用相对路径，禁止使用绝对路径
-        4. 若存在上传文件，请先分析内容
+        文件工具参数规则：
+        1. 工作目录已经由系统绑定；所有文件路径必须相对于该目录，例如 'report.md' 或 'charts/summary.md'。
+        2. 不要在工具参数中添加 '{relative_session_dir_str}/' 前缀，也不要使用绝对路径或 '..'。
+        3. 读取上传文件时，将上方列出的文件名直接作为 read_file_content 的 filename 参数。
+        4. 仅在上传文件与当前问题相关时读取；需要使用其内容时，必须先读取再分析。
         """
         graph_input = {
             "messages": [{"role": "user", "content": task_query + path_instruction}]

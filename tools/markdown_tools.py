@@ -16,7 +16,7 @@ from utils.path_utils import resolve_path
 def generate_markdown(
         content: Annotated[str, "要写入Markdown文档的文本内容"],
         filename: Annotated[str, "Markdown文档的文件名（不包含扩展名或包含.md）"],
-        path: Annotated[str, "文件保存的绝对路径"] = ""
+        path: Annotated[str, "会话工作目录内的相对子目录；直接保存到工作目录时留空"] = ""
 ):
     """根据提供的文本内容，生成对应的Markdown(.md)文件"""
     print(f"路径是{path}")
