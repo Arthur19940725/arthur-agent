@@ -43,6 +43,11 @@ class MainAgentConfigurationTests(unittest.TestCase):
         self.assertIn("当前不支持直接生成 Word", kwargs["system_prompt"])
         self.assertIn("get_stock_quote", kwargs["system_prompt"])
         self.assertIn("get_weather", kwargs["system_prompt"])
+        self.assertIn("「茅台现在多少钱」", kwargs["system_prompt"])
+        self.assertIn("「杭州今天天气」", kwargs["system_prompt"])
+        for subagent in subagents:
+            self.assertIn("使用时机：", subagent["description"])
+            self.assertIn("不要用于：", subagent["description"])
 
 
 if __name__ == "__main__":
