@@ -1,24 +1,22 @@
 from agent.subagents.knowledge_base_agent import knowledge_base_agent
 from agent.subagents.database_query_agent import database_query_agent
 from agent.subagents.network_search_agent import network_search_agent
-from agent.subagents.weather_query_agent import weather_query_agent
-from agent.subagents.stock_analysis_agent import stock_analysis_agent
 
-# main_agent tool导入
 from tools.markdown_tools import generate_markdown
 from tools.pdf_tools import convert_md_to_pdf
-from tools.upload_file_read_tool import read_file_content
+from tools.upload_file_read_tool import list_session_files, read_file_content
 from tools.db_tools import execute_sql_query
+from tools.stock_tool import get_stock_quote
+from tools.weather_tool import get_weather
 
 from deepagents import create_deep_agent
 
-from agent.llm import model
+from agent.llm import pro_model
 from agent.prompts import main_agent_content
-from agent.reflection_middleware import SubagentReflectionMiddleware
+from agent.tool_preview import preview_action_requests
 
 from api.monitor import monitor
 import asyncio
-import uuid
 import shutil
 from pathlib import Path
 
@@ -43,53 +41,37 @@ SENSITIVE_TOOL_APPROVALS = {
     },
 }
 
-def create_main_agent(checkpointer):
-    business_subagents = [
-        database_query_agent,
-        network_search_agent,
-        knowledge_base_agent,
-        weather_query_agent,
-        stock_analysis_agent,
-    ]
-    reflection_middleware = SubagentReflectionMiddleware()
-    configured_subagents = [
-        {
-            **subagent,
-            "middleware": [
-                *subagent.get("middleware", []),
-                reflection_middleware,
-            ],
-        }
-        for subagent in business_subagents
-    ]
+MAIN_AGENT_TOOLS = [
+    generate_markdown,
+    convert_md_to_pdf,
+    read_file_content,
+    list_session_files,
+    execute_sql_query,
+    get_stock_quote,
+    get_weather,
+]
 
+BUSINESS_SUBAGENTS = [
+    database_query_agent,
+    network_search_agent,
+    knowledge_base_agent,
+]
+
+
+def create_main_agent(checkpointer):
     return create_deep_agent(
-       model=model,
-       system_prompt=main_agent_content['system_prompt'],
-       tools=[generate_markdown, convert_md_to_pdf, read_file_content, execute_sql_query],
+       model=pro_model,
+       system_prompt=main_agent_content["system_prompt"],
+       tools=MAIN_AGENT_TOOLS,
        checkpointer=checkpointer,
-       subagents=configured_subagents,
+       subagents=BUSINESS_SUBAGENTS,
        interrupt_on=SENSITIVE_TOOL_APPROVALS,
     )
 
-# 执行
-"""
-  1. 执行主智能体 一定选异步，原因：对应多个客户端
-  2. 什么时候触发我们智能体的调用或者执行？？？
-  3. 客户端 -> api/task -> fastapi 接口 -> 异步执行 -> main_agent的运行 （异步方法）
-  4. main_agent执行stream流式处理 -> 调用工具 -> 已经埋好了点
-                                   调用子智能体 -> 结果解析 -> name = task -> monitor -> 发送子智能体
-                                   调用最终结果 -> 结果 -> monitor -> 发送结果的方法
-                                   开启调用以后 -> 当前会话 -> 文件夹地址 -> 推送到前端
-"""
+
+project_root_path = Path(__file__).parents[1].resolve()
 
 
-
-project_root_path = Path(__file__).parents[1].resolve() # 绝对 解析路径标识以及软连接
-# project_root_path = Path(__file__).parents[1].absolute() # 绝对
-# main_agent.invoke()
-# main_agent.stream()
-# main_agent.astream() [选他]
 def _serialize_interrupts(raw_interrupts):
     approvals = []
     for interrupt_item in raw_interrupts or ():
@@ -106,7 +88,7 @@ def _serialize_interrupts(raw_interrupts):
             raise ValueError("审批中断缺少 action_requests 或 review_configs")
         approvals.append({
             "approval_id": approval_id,
-            "action_requests": action_requests,
+            "action_requests": preview_action_requests(action_requests),
             "review_configs": review_configs,
         })
     if not approvals:
@@ -145,47 +127,33 @@ async def _stream_agent(main_agent, graph_input, config):
     return {"status": "completed", "result": ""}
 
 
+def _load_uploaded_files(session_id: str, session_dir: Path) -> None:
+    updated_dir_path = project_root_path / "updated" / f"session_{session_id}"
+    if not updated_dir_path.exists():
+        return
+    for uploaded in updated_dir_path.iterdir():
+        if uploaded.is_file():
+            shutil.copy2(uploaded, session_dir / uploaded.name)
+
+
 async def run_deep_agent(main_agent, task_query, session_id, resume_decisions=None):
     """执行或恢复一个使用 SQLite checkpoint 持久化的主智能体会话。"""
     print(f"当前会话的main_agent开始执行了！ 会话id:{session_id}")
     session_dir = project_root_path / "output" / f"session_{session_id}"
     session_dir.mkdir(parents=True, exist_ok=True)
     session_dir_str = str(session_dir).replace("\\", "/")
-    relative_session_dir_str = str(session_dir.relative_to(project_root_path)).replace("\\", "/")
 
-    updated_info_prompt = ""
     if resume_decisions is None:
-        updated_dir_path = project_root_path / "updated" / f"session_{session_id}"
-        if updated_dir_path.exists():
-            files = [f.name for f in updated_dir_path.iterdir() if f.is_file()]
-            if files:
-                for filename in files:
-                    shutil.copy2(updated_dir_path / filename, session_dir / filename)
-                updated_info_prompt = (
-                    "\n    [已上传文件] 已加载到工作目录:\n"
-                    + "\n".join([f"    - {f}" for f in files])
-                    + "\n    请优先使用工具（read_file_content）读取并参考这些文件。"
-                )
+        _load_uploaded_files(session_id, session_dir)
 
     session_dir_token = set_session_context(session_dir_str)
     session_id_token = set_thread_context(session_id)
     monitor.report_session_dir(session_dir_str)
-    config = {"configurable": {"thread_id": session_id}}
+    config = {"configurable": {"thread_id": session_id}, "recursion_limit": 40}
 
     if resume_decisions is None:
-        path_instruction = f"""
-        【当前会话工作区】
-        工作目录标识: {relative_session_dir_str}
-        {updated_info_prompt}
-
-        文件工具参数规则：
-        1. 工作目录已经由系统绑定；所有文件路径必须相对于该目录，例如 'report.md' 或 'charts/summary.md'。
-        2. 不要在工具参数中添加 '{relative_session_dir_str}/' 前缀，也不要使用绝对路径或 '..'。
-        3. 读取上传文件时，将上方列出的文件名直接作为 read_file_content 的 filename 参数。
-        4. 仅在上传文件与当前问题相关时读取；需要使用其内容时，必须先读取再分析。
-        """
         graph_input = {
-            "messages": [{"role": "user", "content": task_query + path_instruction}]
+            "messages": [{"role": "user", "content": task_query}]
         }
     else:
         graph_input = Command(resume={"decisions": resume_decisions})
@@ -200,4 +168,3 @@ async def run_deep_agent(main_agent, task_query, session_id, resume_decisions=No
         return {"status": "error", "result": str(exc)}
     finally:
         reset_session_context(session_dir_token, session_id_token)
-

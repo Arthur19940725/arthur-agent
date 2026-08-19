@@ -1,0 +1,78 @@
+tasks:
+  - id: weather-hangzhou
+    query: 今天杭州天气怎么样？
+    expected_tools: [get_weather]
+    forbidden_subagents: [网络搜索助手]
+  - id: weather-forecast
+    query: 上海未来三天会不会下雨，适不适合出门调研？
+    expected_tools: [get_weather]
+    forbidden_subagents: [网络搜索助手]
+  - id: quote-maotai
+    query: 贵州茅台现在多少钱？
+    expected_tools: [get_stock_quote]
+    forbidden_subagents: [网络搜索助手]
+  - id: quote-code
+    query: 600519 今天涨跌幅和成交额是多少？
+    expected_tools: [get_stock_quote]
+    forbidden_subagents: [网络搜索助手]
+  - id: quote-us
+    query: AAPL 现价和市值？
+    expected_tools: [get_stock_quote]
+    forbidden_subagents: [网络搜索助手]
+  - id: news-only
+    query: 最近有哪些关于宁德时代的公司公告和行业政策？
+    expected_subagents: [网络搜索助手]
+    forbidden_tools: [get_stock_quote]
+  - id: quote-then-news
+    query: 分析一下贵州茅台现在的行情，并补充最新新闻观点。
+    expected_tools: [get_stock_quote]
+    expected_subagents: [网络搜索助手]
+  - id: weather-agri
+    query: 东北持续高温对农业板块有什么影响？先看哈尔滨天气再看相关个股。
+    expected_tools: [get_weather, get_stock_quote]
+  - id: holdings-sql
+    query: 查一下内部持仓里茅台的数量和成本。
+    expected_subagents: [数据库查询助手]
+    expected_tools: [execute_sql_query]
+  - id: list-then-sql
+    query: 数据库里有哪些成交明细表？按标的汇总最近成交。
+    expected_subagents: [数据库查询助手]
+    expected_tools: [execute_sql_query]
+  - id: rag-internal
+    query: 内部研报对某标的的估值和风险怎么写的？
+    expected_subagents: [RAGFlow助手]
+    forbidden_subagents: [网络搜索助手]
+  - id: mix-public-private
+    query: 结合公开新闻和内部纪要，总结该行业的催化和风险。
+    expected_subagents: [网络搜索助手, RAGFlow助手]
+  - id: chat-no-file
+    query: 现在值不值得关注贵州茅台？先给结论和风险，不要生成文件。
+    expected_tools: [get_stock_quote]
+    forbidden_tools: [generate_markdown, convert_md_to_pdf]
+  - id: markdown-report
+    query: 根据茅台行情和最新新闻生成一份 Markdown 纪要。
+    expected_tools: [get_stock_quote, generate_markdown]
+    expected_subagents: [网络搜索助手]
+    forbidden_tools: [convert_md_to_pdf]
+  - id: pdf-report
+    query: 生成一份贵州茅台投研 PDF 报告。
+    expected_tools: [get_stock_quote, generate_markdown, convert_md_to_pdf]
+    expected_subagents: [网络搜索助手]
+  - id: pdf-from-md-only
+    query: 把刚才的 Markdown 转成 PDF，不要再生成新的 Markdown。
+    expected_tools: [list_session_files, convert_md_to_pdf]
+    forbidden_tools: [generate_markdown]
+  - id: read-upload
+    query: 先看我上传的持仓表，再告诉我风险敞口。
+    expected_tools: [list_session_files, read_file_content]
+  - id: energy-weather
+    query: 广东高温会不会影响电力和能源股？先查广州天气。
+    expected_tools: [get_weather]
+  - id: no-search-for-weather
+    query: 北京今天下雨吗？
+    expected_tools: [get_weather]
+    forbidden_subagents: [网络搜索助手, RAGFlow助手, 数据库查询助手]
+  - id: no-all-assistants
+    query: 茅台现在股价多少？
+    expected_tools: [get_stock_quote]
+    forbidden_subagents: [网络搜索助手, RAGFlow助手, 数据库查询助手]

@@ -993,8 +993,14 @@
       state.approval = approval;
       const actions = approval.action_requests || [];
       elements.approvalCopy.textContent = actions.map((action) => {
-        const args = JSON.stringify(action.args || {}, null, 2);
-        return `${action.name}\n${action.description || ""}\n参数：${args}`;
+        const args = action.args || {};
+        const displayArgs = { ...args };
+        if (typeof displayArgs.content === "string" && displayArgs.content.length > 400) {
+          displayArgs.content_chars = displayArgs.content.length;
+          displayArgs.content_preview = displayArgs.content.slice(0, 400) + "…";
+          delete displayArgs.content;
+        }
+        return `${action.name}\n${action.description || ""}\n参数：${JSON.stringify(displayArgs, null, 2)}`;
       }).join("\n\n");
       elements.approvalCard.hidden = false;
       state.task = "waiting_for_approval";

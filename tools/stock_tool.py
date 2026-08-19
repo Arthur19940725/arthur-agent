@@ -107,9 +107,9 @@ def _fetch_yahoo_quote(symbol: str) -> str:
 @tool
 def get_stock_quote(symbol: str) -> str:
     """
-    查询股票实时行情，支持 A 股代码/名称，以及美股代码。
+    查询个股实时行情。用户问现价、涨跌、成交额、市值或市盈率时必须使用本工具，不要用网络搜索代替。
     :param symbol: 股票代码或名称，例如 600519、贵州茅台、AAPL
-    :return: 现价、涨跌幅、成交额等行情文本
+    :return: 现价、涨跌幅、成交额等行情原文；不要编造数字
     """
     query = (symbol or "").strip()
     monitor.report_tool(tool_name="股票行情工具", args={"symbol": query})

@@ -34,6 +34,26 @@ except ImportError:
 #         instruction: 对提取内容的具体指令（例如：'提取摘要', '统计数据'）
 
 @tool
+def list_session_files() -> str:
+    """列出当前会话工作目录中的文件。读取用户上传或已生成的文件前先调用本工具，不要猜测路径。"""
+    session_dir = get_session_context()
+    monitor.report_tool("会话文件列表工具", {})
+    if not session_dir:
+        return "当前没有工作目录。"
+    root = Path(session_dir)
+    if not root.exists():
+        return "工作目录不存在。"
+    files = sorted(
+        path.relative_to(root).as_posix()
+        for path in root.rglob("*")
+        if path.is_file()
+    )
+    if not files:
+        return "工作目录为空，没有可读取的文件。"
+    return "工作目录文件：\n" + "\n".join(f"- {name}" for name in files)
+
+
+@tool
 def read_file_content(
         filename: Annotated[str, "要读取的文件名或路径（支持 .md, .docx, .pdf, .xlsx, .xls）"],
         instruction: Annotated[str, "对提取内容的具体指令（例如：'提取摘要', '统计数据'）"] = "提取全部内容"
