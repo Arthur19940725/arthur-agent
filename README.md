@@ -12,7 +12,7 @@
 
 ## 🎯 这个项目是什么
 
-这是一个 **不到 1000 行代码** 的 AI Agent 学习项目。它用最精简的方式展示了如何基于 LangChain 生态构建一个**多智能体协作系统**——一个"主智能体"像团队负责人一样调度五个"子智能体"（股票分析、网络搜索、数据库查询、知识库检索、天气查询）来协同完成复杂任务。
+这是一个 **不到 1000 行代码** 的 AI Agent 学习项目。它用最精简的方式展示了如何基于 LangChain 生态构建一个**多智能体协作系统**——一个"主智能体"像团队负责人一样调度三个检索类"子智能体"（网络搜索、数据库查询、知识库检索），并直接调用行情、天气和文件工具来完成复杂任务。
 
 **如果你是以下人群，这个项目就是为你准备的 👇**
 
@@ -30,7 +30,7 @@
 
 | 知识点                       | 具体体现在项目哪里                                            |
 | ------------------------- | ---------------------------------------------------- |
-| **Orchestrator 多智能体模式**   | `agent/main_agent.py` — 主智能体如何调度 5 个子智能体             |
+| **Orchestrator 多智能体模式**   | `agent/main_agent.py` — 主智能体如何调度 3 个检索子智能体，并直接调用行情/天气工具 |
 | **Prompt Engineering 实战** | `prompt/prompts.yml` — 如何用 system_prompt 约束 Agent 行为 |
 | **LangChain @tool 自定义工具** | `tools/` 目录 — 8 个工具函数的完整写法                           |
 | **FastAPI 异步 + 后台任务**     | `api/server.py` — `asyncio.create_task` 非阻塞执行        |
@@ -58,11 +58,10 @@ api/server.py          ← 入门的第一个文件：FastAPI 的路由和 WebSo
     ▼
 agent/main_agent.py    ← 核心：主智能体如何创建、如何异步流式执行
     │
-    ├──→ 子智能体 1: 股票分析     (tools/stock_tool.py)
-    ├──→ 子智能体 2: 网络搜索     (tools/tavily_tool.py)
-    ├──→ 子智能体 3: 数据库查询   (tools/db_tools.py)
-    ├──→ 子智能体 4: RAGFlow知识库 (tools/ragflow_tools.py)
-    ├──→ 子智能体 5: 天气查询     (tools/weather_tool.py)
+    ├──→ 主智能体工具: 股票行情 / 天气 / 会话文件
+    ├──→ 子智能体 1: 网络搜索     (tools/tavily_tool.py)
+    ├──→ 子智能体 2: 数据库查询   (tools/db_tools.py)
+    ├──→ 子智能体 3: RAGFlow知识库 (tools/ragflow_tools.py)
     │
     └──→ 主智能体自己调: 生成Markdown → 转PDF
     │
@@ -220,9 +219,7 @@ arthur-agent/
 │   └── subagents/                  # 子智能体（每个就是一个字典）
 │       ├── network_search_agent.py
 │       ├── database_query_agent.py
-│       ├── knowledge_base_agent.py
-│       ├── weather_query_agent.py
-│       └── stock_analysis_agent.py
+│       └── knowledge_base_agent.py
 │
 ├── api/                            # 🌐 Web 接口层
 │   ├── server.py                   # FastAPI 入口
@@ -262,8 +259,9 @@ arthur-agent/
 ### 入门级（加深理解）
 
 - [ ] **换个模型**：把通义千问换成 DeepSeek 或 GPT，改 `.env` 一行就行
-- [x] **加一个子智能体**：已加入"天气查询助手"和"股票分析助手"
+- [x] **加一个子智能体**：已加入检索类助手；行情和天气收编为主控工具
 - [x] **改 system_prompt**：已把"空调公司"改成股票分析业务场景
+- [x] **收编单工具专家**：天气/股票改为 `get_weather` / `get_stock_quote`，避免伪多 Agent
 
 
 

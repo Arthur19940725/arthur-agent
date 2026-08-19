@@ -38,8 +38,7 @@ def _describe_weather(code: int) -> str:
 @tool
 def get_weather(city: str, forecast_days: int = 3) -> str:
     """
-    查询指定城市的实时天气和未来几天预报。
-    适用于用户询问气温、下雨、出行天气等场景。
+    查询指定城市的实时天气和未来几天预报。用户问天气，或分析农业、能源、旅游、物流等天气敏感板块时使用；不要用网络搜索代替。
     :param city: 城市名称，例如 北京、上海、Hangzhou
     :param forecast_days: 预报天数，范围 1-7，默认 3
     :return: 当前天气和逐日预报文本
