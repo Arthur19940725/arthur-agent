@@ -3,10 +3,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from agent.persistence import open_sqlite_checkpointer
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.graph import END, START, StateGraph
 from typing_extensions import TypedDict
+
+from agent.persistence import open_sqlite_checkpointer
 
 
 class CounterState(TypedDict):

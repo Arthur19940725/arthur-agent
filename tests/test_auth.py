@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from fastapi import HTTPException
@@ -54,13 +54,11 @@ class AuthTests(unittest.TestCase):
             AuthSettings.from_env(values)
 
     def test_credentials_and_token_round_trip(self):
-        principal = authenticate_credentials(
-            "demo", self.password, self.settings
-        )
+        principal = authenticate_credentials("demo", self.password, self.settings)
         self.assertIsNotNone(principal)
         self.assertEqual(principal.subject, "demo-user")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         token = issue_access_token(
             principal.subject,
             self.settings,
@@ -81,18 +79,14 @@ class AuthTests(unittest.TestCase):
         self.assertEqual(principal.expires_at, float(claims["exp"]))
 
     def test_wrong_credentials_are_rejected(self):
-        self.assertIsNone(
-            authenticate_credentials("wrong-user", self.password, self.settings)
-        )
-        self.assertIsNone(
-            authenticate_credentials("demo", "wrong-password", self.settings)
-        )
+        self.assertIsNone(authenticate_credentials("wrong-user", self.password, self.settings))
+        self.assertIsNone(authenticate_credentials("demo", "wrong-password", self.settings))
 
     def test_expired_token_is_rejected(self):
         token = issue_access_token(
             "demo-user",
             self.settings,
-            now=datetime.now(timezone.utc) - timedelta(minutes=30),
+            now=datetime.now(UTC) - timedelta(minutes=30),
         )
         with self.assertRaises(ValueError):
             decode_access_token(token, self.settings)
@@ -102,15 +96,15 @@ class AuthTests(unittest.TestCase):
             "sub": "demo-user",
             "iss": self.settings.issuer,
             "aud": self.settings.audience,
-            "iat": int(datetime.now(timezone.utc).timestamp()),
-            "exp": int((datetime.now(timezone.utc) + timedelta(minutes=5)).timestamp()),
+            "iat": int(datetime.now(UTC).timestamp()),
+            "exp": int((datetime.now(UTC) + timedelta(minutes=5)).timestamp()),
         }
         token = jwt.encode(payload, key="", algorithm="none")
         with self.assertRaises(ValueError):
             decode_access_token(token, self.settings)
 
     def test_missing_required_claim_is_rejected(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         payload = {
             "sub": "demo-user",
             "iss": self.settings.issuer,
@@ -128,12 +122,8 @@ class AuthTests(unittest.TestCase):
     def test_wrong_issuer_audience_and_subject_are_rejected(self):
         token = issue_access_token("demo-user", self.settings)
         wrong_issuer = AuthSettings(**{**self.settings.__dict__, "issuer": "other"})
-        wrong_audience = AuthSettings(
-            **{**self.settings.__dict__, "audience": "other"}
-        )
-        wrong_subject = AuthSettings(
-            **{**self.settings.__dict__, "user_id": "other-user"}
-        )
+        wrong_audience = AuthSettings(**{**self.settings.__dict__, "audience": "other"})
+        wrong_subject = AuthSettings(**{**self.settings.__dict__, "user_id": "other-user"})
         with self.assertRaises(ValueError):
             decode_access_token(token, wrong_issuer)
         with self.assertRaises(ValueError):

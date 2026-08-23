@@ -21,10 +21,12 @@ class ToolPreviewTests(unittest.TestCase):
         self.assertEqual(preview_tool_args("execute_sql_query", args), args)
 
     def test_action_requests_preview_markdown_only(self):
-        actions = preview_action_requests([
-            {"name": "generate_markdown", "args": {"filename": "a.md", "content": "B" * 401}},
-            {"name": "execute_sql_query", "args": {"query": "SELECT 1"}},
-        ])
+        actions = preview_action_requests(
+            [
+                {"name": "generate_markdown", "args": {"filename": "a.md", "content": "B" * 401}},
+                {"name": "execute_sql_query", "args": {"query": "SELECT 1"}},
+            ]
+        )
         self.assertNotIn("content", actions[0]["args"])
         self.assertEqual(actions[1]["args"]["query"], "SELECT 1")
 

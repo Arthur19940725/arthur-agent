@@ -1,10 +1,11 @@
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 
-from agent.main_agent import BUSINESS_SUBAGENTS, MAIN_AGENT_TOOLS
-
+from agent.llm import ModelBundle
+from agent.main_agent import create_main_agent
 
 GOLDEN_PATH = Path(__file__).resolve().parents[1] / "evals" / "golden_tasks.yml"
 
@@ -15,8 +16,17 @@ class GoldenTaskCatalogTests(unittest.TestCase):
         with GOLDEN_PATH.open(encoding="utf-8") as handle:
             cls.payload = yaml.safe_load(handle)
         cls.tasks = cls.payload["tasks"]
-        cls.tool_names = {tool.name for tool in MAIN_AGENT_TOOLS}
-        cls.subagent_names = {item["name"] for item in BUSINESS_SUBAGENTS}
+        with patch("agent.main_agent.create_deep_agent") as create_deep_agent:
+            create_main_agent(
+                object(),
+                models=ModelBundle(flash=object(), pro=object()),
+                search_client=object(),
+                ragflow_client=object(),
+                database_enabled=True,
+            )
+        config = create_deep_agent.call_args.kwargs
+        cls.tool_names = {tool.name for tool in config["tools"]}
+        cls.subagent_names = {item["name"] for item in config["subagents"]}
 
     def test_golden_set_has_twenty_tasks_with_unique_ids(self):
         self.assertGreaterEqual(len(self.tasks), 20)

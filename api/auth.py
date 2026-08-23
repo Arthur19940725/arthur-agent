@@ -2,16 +2,15 @@ from __future__ import annotations
 
 import os
 import secrets
+from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from typing import Mapping
+from datetime import UTC, datetime, timedelta
 
 import jwt
+from dotenv import find_dotenv, load_dotenv
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from dotenv import find_dotenv, load_dotenv
 from pwdlib import PasswordHash
-
 
 load_dotenv(find_dotenv())
 
@@ -45,7 +44,7 @@ class AuthSettings:
     ws_auth_timeout_seconds: float = 5.0
 
     @classmethod
-    def from_env(cls, environ: Mapping[str, str] | None = None) -> "AuthSettings":
+    def from_env(cls, environ: Mapping[str, str] | None = None) -> AuthSettings:
         values = os.environ if environ is None else environ
 
         username = _required_value(values, "AUTH_USERNAME")
@@ -78,9 +77,7 @@ class AuthSettings:
         issuer = values.get("AUTH_JWT_ISSUER", DEFAULT_ISSUER).strip()
         audience = values.get("AUTH_JWT_AUDIENCE", DEFAULT_AUDIENCE).strip()
         if not issuer or not audience:
-            raise AuthConfigurationError(
-                "AUTH_JWT_ISSUER and AUTH_JWT_AUDIENCE must not be empty"
-            )
+            raise AuthConfigurationError("AUTH_JWT_ISSUER and AUTH_JWT_AUDIENCE must not be empty")
 
         return cls(
             username=username,
@@ -157,10 +154,10 @@ def issue_access_token(
     now: datetime | None = None,
 ) -> str:
     settings = settings or AuthSettings.from_env()
-    issued_at = now or datetime.now(timezone.utc)
+    issued_at = now or datetime.now(UTC)
     if issued_at.tzinfo is None:
-        issued_at = issued_at.replace(tzinfo=timezone.utc)
-    issued_at = issued_at.astimezone(timezone.utc)
+        issued_at = issued_at.replace(tzinfo=UTC)
+    issued_at = issued_at.astimezone(UTC)
     issued_timestamp = int(issued_at.timestamp())
     expires_timestamp = int(
         (issued_at + timedelta(minutes=settings.token_expire_minutes)).timestamp()
@@ -228,4 +225,4 @@ def get_current_user(token: str | None = Depends(oauth2_scheme)) -> Principal:
     try:
         return decode_access_token(token, settings)
     except ValueError:
-        raise authentication_error()
+        raise authentication_error() from None

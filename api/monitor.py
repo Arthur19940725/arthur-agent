@@ -1,227 +1,174 @@
-import datetime
-import asyncio
-from typing import Any, Dict, Optional
-from fastapi import WebSocket
-from api.context import get_thread_context
-from api.history import EventHistory
+from __future__ import annotations
 
-# 尝试导入全局运行时（用于脚本模式下的流式输出）
-try:
-    import builtins
-except ImportError:
-    builtins = None
+import asyncio
+import logging
+from typing import Any
+
+from fastapi import WebSocket
+
+from api.context import get_thread_context
+from api.task_store import TaskStore
+
+logger = logging.getLogger(__name__)
+
+
+class ConnectionManager:
+    """WebSocket transport Adapter; TaskStore remains the event source of truth."""
+
+    def __init__(self, *, queue_size: int = 256) -> None:
+        if queue_size <= 0:
+            raise ValueError("queue_size must be positive")
+        self.active_connections: dict[str, WebSocket] = {}
+        self.store: TaskStore | None = None
+        self.loop: asyncio.AbstractEventLoop | None = None
+        self._queue_size = queue_size
+        self._queue: asyncio.Queue[tuple[str, dict[str, Any]]] | None = None
+        self._worker: asyncio.Task | None = None
+        self.live_delivery_drops = 0
+
+    async def start(self, store: TaskStore, loop: asyncio.AbstractEventLoop) -> None:
+        if self._worker is not None:
+            raise RuntimeError("connection manager already started")
+        self.store = store
+        self.loop = loop
+        self._queue = asyncio.Queue(maxsize=self._queue_size)
+        self._worker = asyncio.create_task(self._deliver_queued())
+
+    async def stop(self) -> None:
+        if self._worker is None:
+            return
+        await self.drain()
+        self._worker.cancel()
+        await asyncio.gather(self._worker, return_exceptions=True)
+        self._worker = None
+        self._queue = None
+        self.loop = None
+        self.store = None
+        self.active_connections.clear()
+
+    async def drain(self) -> None:
+        if self._queue is not None:
+            await self._queue.join()
+
+    async def publish(self, thread_id: str, message: dict[str, Any]) -> dict[str, Any]:
+        stored = self._record(thread_id, message)
+        await self._deliver(thread_id, stored)
+        return stored
+
+    def publish_from_context(
+        self,
+        message: dict[str, Any],
+        *,
+        thread_id: str | None = None,
+    ) -> dict[str, Any] | None:
+        target = thread_id or get_thread_context()
+        if target is None or self.store is None or self.loop is None or self._queue is None:
+            return None
+        stored = self._record(target, message)
+        try:
+            current = asyncio.get_running_loop()
+        except RuntimeError:
+            current = None
+        if current is self.loop:
+            self._enqueue(target, stored)
+        else:
+            self.loop.call_soon_threadsafe(self._enqueue, target, stored)
+        return stored
+
+    def get_task(self, thread_id: str) -> dict[str, Any]:
+        if self.store is None:
+            raise RuntimeError("connection manager is not started")
+        return self.store.get_task(thread_id)
+
+    async def register_authenticated(self, websocket: WebSocket, thread_id: str) -> None:
+        if self.store is None:
+            raise RuntimeError("connection manager is not started")
+        self.active_connections[thread_id] = websocket
+        for event in self.store.replay(thread_id):
+            await websocket.send_json(event)
+
+    def disconnect(self, websocket: WebSocket, thread_id: str) -> None:
+        if self.active_connections.get(thread_id) is websocket:
+            del self.active_connections[thread_id]
+
+    def _record(self, thread_id: str, message: dict[str, Any]) -> dict[str, Any]:
+        if self.store is None:
+            raise RuntimeError("connection manager is not started")
+        return self.store.append_event(thread_id, message)
+
+    def _enqueue(self, thread_id: str, event: dict[str, Any]) -> None:
+        if self._queue is None:
+            return
+        try:
+            self._queue.put_nowait((thread_id, event))
+        except asyncio.QueueFull:
+            self.live_delivery_drops += 1
+            logger.warning(
+                "live event queue full; event remains available for replay",
+                extra={"thread_id": thread_id, "seq": event.get("seq")},
+            )
+
+    async def _deliver_queued(self) -> None:
+        assert self._queue is not None
+        while True:
+            thread_id, event = await self._queue.get()
+            try:
+                await self._deliver(thread_id, event)
+            finally:
+                self._queue.task_done()
+
+    async def _deliver(self, thread_id: str, event: dict[str, Any]) -> None:
+        websocket = self.active_connections.get(thread_id)
+        if websocket is None:
+            return
+        try:
+            await websocket.send_json(event)
+        except Exception:
+            self.disconnect(websocket, thread_id)
+            logger.warning(
+                "websocket delivery failed; event remains available for replay",
+                extra={"thread_id": thread_id, "seq": event.get("seq")},
+            )
+
+
+manager = ConnectionManager()
 
 
 class ToolMonitor:
-    """
-    工具监控类，用于在工具执行过程中上报进度和状态。
-    设计为单例模式，可在任何工具中直接导入使用。
-    兼容 FastAPI WebSocket 和 脚本运行时的 stream_writer。
-
-    使用示例:
-    from api.monitor import monitor
-
-    def my_tool(arg1):
-        monitor.report_start("my_tool", {"arg1": arg1})
-        ...
-        monitor.report_running("my_tool", "正在处理数据...", progress=0.5)
-        ...
-        monitor.report_end("my_tool", result)
-    """
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(ToolMonitor, cls).__new__(cls)
-            cls._instance.websocket_manager = None  # 预留给 FastAPI WebSocketManager
-        return cls._instance
-
-    def set_websocket_manager(self, manager):
-        """设置 FastAPI 的 WebSocket 管理器"""
-        self.websocket_manager = manager
-
-    def _emit(self, event_type: str, message: str, data: Optional[Dict[str, Any]] = None):
-        """内部发送方法"""
+    def _emit(self, event_type: str, message: str, data: dict[str, Any] | None = None) -> None:
         payload = {
             "type": "monitor_event",
             "event": event_type,
             "message": message,
             "data": data or {},
-            "timestamp": datetime.datetime.now().isoformat()
         }
+        manager.publish_from_context(payload)
+        logger.info("agent event %s: %s", event_type, message)
 
-        # 1. 优先尝试通过 FastAPI WebSocket 发送 (定向推送)
-        if self.websocket_manager:
-            try:
-                # 获取当前线程 ID
-                thread_id = get_thread_context()
+    def report_tool(self, tool_name: str, args: dict[str, Any] | None = None) -> None:
+        self._emit(
+            "tool_start", f"开始执行工具: {tool_name}", {"tool_name": tool_name, "args": args or {}}
+        )
 
-                # 确保 loop 已加载 [fastapi的事件循环]
-                manager_loop = self.websocket_manager.loop
+    def report_assistant(self, assistant_name: str, args: dict[str, Any] | None = None) -> None:
+        self._emit(
+            "assistant_call",
+            f"正在调用助手: {assistant_name}",
+            {"assistant_name": assistant_name, "args": args or {}},
+        )
 
-                if manager_loop:
-                    if thread_id:
-                        # 检查当前是否在同一个事件循环中
-                        try:
-                            # 当前的循环事件
-                            current_loop = asyncio.get_running_loop()
-                            print(f"对比是不是同一个event_loop:{manager_loop == current_loop}")
-                        except RuntimeError:
-                            current_loop = None
-
-                        if current_loop and current_loop == manager_loop:
-                            # 如果在同一个循环中（例如在 create_task 中运行），直接创建任务
-                            current_loop.create_task(
-                                self.websocket_manager.send_to_thread(payload, thread_id)
-                            )
-                        else:
-                            #  FastAPI 的 WebSocket 依赖异步事件循环，且协程必须在创建它的循环中运行：
-                            #  如果当前线程和 WebSocket 管理器在同一个循环（比如在 FastAPI 的接口 / 任务中运行）：直接 create_task 效率最高；
-                            #  如果在不同循环 / 不同线程（比如同步线程调用）：必须用 asyncio.run_coroutine_threadsafe（线程安全的方式），否则会报错 “协程在错误的循环中运行”。
-                            # 如果在不同线程，使用 threadsafe 方法
-                            asyncio.run_coroutine_threadsafe(
-                                self.websocket_manager.send_to_thread(payload, thread_id),
-                                manager_loop
-                            )
-                    else:
-                        # 如果没有 thread_id，说明可能是系统级消息，或者未上下文环境
-                        pass
-            except Exception as e:
-                print(f"[Monitor] WebSocket send failed: {e}")
-
-        # 2. 尝试通过全局 runtime 输出 (DeepAgents 脚本模式)
-        # 这使得 simple_agents.py 中的 MockRuntime 能接收到数据
-        if builtins and hasattr(builtins, 'runtime') and hasattr(builtins.runtime, 'stream_writer'):
-            try:
-                builtins.runtime.stream_writer(payload)
-            except Exception:
-                pass
-
-        # 3. 控制台保底输出 (方便调试)
-        # 加上特殊前缀，方便肉眼识别
-        print(f"\n[Monitor:{event_type}] {message}")
-
-    def report_tool(self, tool_name: str, args: Dict[str, Any] = None):
-        """报告工具开始执行"""
-        self._emit("tool_start", f"开始执行工具: {tool_name}", {"tool_name": tool_name, "args": args})
-
-    def report_assistant(self, assistant_name: str, args: Dict[str, Any] = None):
-        """报告正在调用的子智能体进度"""
-        self._emit("assistant_call", f"正在调用助手: {assistant_name}",
-                   {"assistant_name": assistant_name, "args": args})
-
-    def report_task_result(self, result: str):
-        """报告任务最终结果"""
+    def report_task_result(self, result: str) -> None:
         self._emit("task_result", "任务执行完成", {"result": result})
 
-    def report_session_dir(self, path: str):
-        """报告任务工作目录"""
-        self._emit("session_created", f"工作目录已创建: {path}", {"path": path})
+    def report_session_dir(self, thread_id: str) -> None:
+        self._emit("session_created", "会话工作目录已准备", {"thread_id": thread_id})
 
-    def report_waiting_for_approval(self, approvals: list[dict]):
-        """报告图已经安全暂停，正在等待用户处理敏感操作。"""
+    def report_waiting_for_approval(self, approvals: list[dict]) -> None:
         self._emit(
             "waiting_for_approval",
             "敏感操作等待人工确认",
             {"approvals": approvals},
         )
 
-    def report_approval_resumed(self, decisions: list[dict]):
-        """报告审批决定已提交，图将从 checkpoint 恢复。"""
-        event = "approval_rejected" if any(
-            decision.get("type") == "reject" for decision in decisions
-        ) else "approval_resumed"
-        self._emit(event, "审批决定已提交，任务继续执行", {})
 
-
-# 全局单例实例
 monitor = ToolMonitor()
-
-
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: Dict[str, WebSocket] = {}
-        self.event_history = EventHistory.from_env() if hasattr(EventHistory, "from_env") else EventHistory()
-        self.task_status: Dict[str, Dict[str, Any]] = {}
-        # 延迟绑定 loop，防止初始化时 loop 不一致
-        self.loop = None
-
-    def set_loop(self, loop):
-        """显式设置事件循环"""
-        self.loop = loop
-        monitor.set_websocket_manager(self)
-        print(f"[Monitor] ConnectionManager manually bound to loop: {id(self.loop)}")
-
-    def mark_started(self, thread_id: str, query: str = ""):
-        self.task_status[thread_id] = {
-            "status": "started",
-            "query": query,
-            "result": "",
-        }
-        self.event_history.replay(thread_id)
-
-    def get_task(self, thread_id: str) -> Dict[str, Any]:
-        status = self.task_status.get(thread_id) or {
-            "status": "unknown",
-            "query": "",
-            "result": "",
-        }
-        history = self.event_history.replay(thread_id)
-        return {
-            "thread_id": thread_id,
-            **status,
-            "events": list(history.events),
-            "first_available_seq": history.first_available_seq,
-            "next_seq": history.next_seq,
-            "dropped_events": history.dropped_events,
-        }
-
-    def _record_event(self, thread_id: str, message: dict):
-        event = message.get("event")
-        data = message.get("data") or {}
-        current = self.task_status.setdefault(thread_id, {
-            "status": "started",
-            "query": "",
-            "result": "",
-        })
-        if event == "task_result":
-            current["status"] = "completed"
-            current["result"] = data.get("result", "")
-        elif event == "error":
-            current["status"] = "error"
-            current["result"] = message.get("message", "")
-        elif event == "waiting_for_approval":
-            current["status"] = "waiting_for_approval"
-            current["approvals"] = data.get("approvals", [])
-        elif event in {"approval_resumed", "approval_rejected"}:
-            current["status"] = "running"
-            current.pop("approvals", None)
-        elif current.get("status") == "started":
-            current["status"] = "running"
-        self.event_history.append(thread_id, message)
-
-    async def register_authenticated(self, websocket: WebSocket, thread_id: str):
-        """Register a socket after the caller has completed authentication."""
-        self.active_connections[thread_id] = websocket
-        print(f"存储当前会话id:{thread_id}对应的:{websocket}")
-        print(f"Client connected: {thread_id}")
-        history = self.event_history.replay(thread_id)
-        for event in history.events:
-            await websocket.send_json(event)
-
-    def disconnect(self, websocket: WebSocket, thread_id: str):
-        if self.active_connections.get(thread_id) is websocket:
-            del self.active_connections[thread_id]
-        print(f"Client disconnected: {thread_id}")
-
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
-
-    async def send_to_thread(self, message: dict, thread_id: str):
-        self._record_event(thread_id, message)
-        if thread_id in self.active_connections:
-            websocket = self.active_connections[thread_id]
-            await websocket.send_json(message)
-
-
-manager = ConnectionManager()

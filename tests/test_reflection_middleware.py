@@ -1,12 +1,13 @@
 import unittest
 from unittest.mock import AsyncMock
 
+from langchain.agents.middleware.types import ModelRequest, ModelResponse
+from langchain_core.messages import AIMessage, HumanMessage
+
 from agent.reflection_middleware import (
     REFLECTION_PROMPT,
     SubagentReflectionMiddleware,
 )
-from langchain.agents.middleware.types import ModelRequest, ModelResponse
-from langchain_core.messages import AIMessage, HumanMessage
 
 
 class ReflectionMiddlewareTests(unittest.IsolatedAsyncioTestCase):
@@ -25,9 +26,7 @@ class ReflectionMiddlewareTests(unittest.IsolatedAsyncioTestCase):
         ]
         handler = AsyncMock(side_effect=responses)
 
-        result = await SubagentReflectionMiddleware().awrap_model_call(
-            request, handler
-        )
+        result = await SubagentReflectionMiddleware().awrap_model_call(request, handler)
 
         self.assertEqual(result.result[0].content, "修订稿")
         self.assertEqual(handler.await_count, 2)
@@ -56,9 +55,7 @@ class ReflectionMiddlewareTests(unittest.IsolatedAsyncioTestCase):
         )
         handler = AsyncMock(return_value=first_response)
 
-        result = await SubagentReflectionMiddleware().awrap_model_call(
-            request, handler
-        )
+        result = await SubagentReflectionMiddleware().awrap_model_call(request, handler)
 
         self.assertIs(result, first_response)
         handler.assert_awaited_once_with(request)
@@ -68,9 +65,7 @@ class ReflectionMiddlewareTests(unittest.IsolatedAsyncioTestCase):
         first_response = ModelResponse(result=[AIMessage(content="可用初稿")])
         handler = AsyncMock(side_effect=[first_response, RuntimeError("暂时不可用")])
 
-        result = await SubagentReflectionMiddleware().awrap_model_call(
-            request, handler
-        )
+        result = await SubagentReflectionMiddleware().awrap_model_call(request, handler)
 
         self.assertIs(result, first_response)
         self.assertEqual(handler.await_count, 2)
@@ -85,9 +80,9 @@ class ReflectionMiddlewareTests(unittest.IsolatedAsyncioTestCase):
         )
 
         with self.assertRaisesRegex(RuntimeError, "反思失败"):
-            await SubagentReflectionMiddleware(
-                fallback_on_error=False
-            ).awrap_model_call(request, handler)
+            await SubagentReflectionMiddleware(fallback_on_error=False).awrap_model_call(
+                request, handler
+            )
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import requests
 from langchain_core.tools import tool
 
 from api.monitor import monitor
+from tools.outcomes import ToolFailure, expose_failures
 
 GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search"
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
@@ -46,12 +47,17 @@ def get_weather(city: str, forecast_days: int = 3) -> str:
     days = max(1, min(int(forecast_days), 7))
     monitor.report_tool(tool_name="天气查询工具", args={"city": city, "forecast_days": days})
 
-    geo_resp = requests.get(
-        GEOCODING_URL,
-        params={"name": city, "count": 1, "language": "zh"},
-        timeout=15,
-    )
-    geo_resp.raise_for_status()
+    try:
+        geo_resp = requests.get(
+            GEOCODING_URL,
+            params={"name": city, "count": 1, "language": "zh"},
+            timeout=15,
+        )
+        geo_resp.raise_for_status()
+    except requests.Timeout:
+        raise ToolFailure("upstream_timeout", "天气服务响应超时", retryable=True) from None
+    except requests.RequestException:
+        raise ToolFailure("upstream_unavailable", "天气服务暂不可用", retryable=True) from None
     geo_results = geo_resp.json().get("results") or []
     if not geo_results:
         return f"未找到城市：{city}。请换一个更具体的城市名再试。"
@@ -63,19 +69,24 @@ def get_weather(city: str, forecast_days: int = 3) -> str:
         part for part in [place.get("name"), place.get("admin1"), place.get("country")] if part
     )
 
-    forecast_resp = requests.get(
-        FORECAST_URL,
-        params={
-            "latitude": latitude,
-            "longitude": longitude,
-            "current": "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m",
-            "daily": "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum",
-            "timezone": "auto",
-            "forecast_days": days,
-        },
-        timeout=15,
-    )
-    forecast_resp.raise_for_status()
+    try:
+        forecast_resp = requests.get(
+            FORECAST_URL,
+            params={
+                "latitude": latitude,
+                "longitude": longitude,
+                "current": "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m",
+                "daily": "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum",
+                "timezone": "auto",
+                "forecast_days": days,
+            },
+            timeout=15,
+        )
+        forecast_resp.raise_for_status()
+    except requests.Timeout:
+        raise ToolFailure("upstream_timeout", "天气服务响应超时", retryable=True) from None
+    except requests.RequestException:
+        raise ToolFailure("upstream_unavailable", "天气服务暂不可用", retryable=True) from None
     data = forecast_resp.json()
 
     current = data.get("current") or {}
@@ -97,3 +108,6 @@ def get_weather(city: str, forecast_days: int = 3) -> str:
             f"降水 {(daily.get('precipitation_sum') or ['?'])[index]} mm"
         )
     return "\n".join(lines)
+
+
+get_weather = expose_failures(get_weather)

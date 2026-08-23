@@ -6,8 +6,8 @@ import threading
 import time
 import uuid
 from collections import deque
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
-from typing import Callable, Mapping
 
 
 @dataclass(frozen=True)
@@ -20,15 +20,25 @@ class AdmissionSettings:
     max_query_bytes: int = 32 * 1024
 
     @classmethod
-    def from_env(cls, environ: Mapping[str, str] | None = None) -> "AdmissionSettings":
+    def from_env(cls, environ: Mapping[str, str] | None = None) -> AdmissionSettings:
         values = os.environ if environ is None else environ
         return cls(
-            max_active_per_user=_positive_int(values, "DEEP_SEARCH_MAX_ACTIVE_PER_USER", cls.max_active_per_user),
-            max_active_process=_positive_int(values, "DEEP_SEARCH_MAX_ACTIVE_PROCESS", cls.max_active_process),
+            max_active_per_user=_positive_int(
+                values, "DEEP_SEARCH_MAX_ACTIVE_PER_USER", cls.max_active_per_user
+            ),
+            max_active_process=_positive_int(
+                values, "DEEP_SEARCH_MAX_ACTIVE_PROCESS", cls.max_active_process
+            ),
             rate_limit=_positive_int(values, "DEEP_SEARCH_RATE_LIMIT", cls.rate_limit),
-            rate_window_seconds=_positive_float(values, "DEEP_SEARCH_RATE_WINDOW_SECONDS", cls.rate_window_seconds),
-            rate_history_ttl_seconds=_positive_float(values, "DEEP_SEARCH_RATE_HISTORY_TTL_SECONDS", cls.rate_history_ttl_seconds),
-            max_query_bytes=_positive_int(values, "DEEP_SEARCH_MAX_QUERY_BYTES", cls.max_query_bytes),
+            rate_window_seconds=_positive_float(
+                values, "DEEP_SEARCH_RATE_WINDOW_SECONDS", cls.rate_window_seconds
+            ),
+            rate_history_ttl_seconds=_positive_float(
+                values, "DEEP_SEARCH_RATE_HISTORY_TTL_SECONDS", cls.rate_history_ttl_seconds
+            ),
+            max_query_bytes=_positive_int(
+                values, "DEEP_SEARCH_MAX_QUERY_BYTES", cls.max_query_bytes
+            ),
         )
 
 
@@ -59,7 +69,9 @@ def _positive_float(values: Mapping[str, str], name: str, default: float) -> flo
 
 
 class AdmissionError(RuntimeError):
-    def __init__(self, code: str, message: str, *, status_code: int, retry_after: int | None = None):
+    def __init__(
+        self, code: str, message: str, *, status_code: int, retry_after: int | None = None
+    ):
         super().__init__(message)
         self.code = code
         self.message = message
@@ -75,7 +87,7 @@ class _UserState:
 
 
 class TaskLease:
-    def __init__(self, admission: "TaskAdmission", user_id: str, thread_id: str, token: str):
+    def __init__(self, admission: TaskAdmission, user_id: str, thread_id: str, token: str):
         self._admission = admission
         self.user_id = user_id
         self.thread_id = thread_id
@@ -109,7 +121,7 @@ class TaskAdmission:
         cls,
         *,
         clock: Callable[[], float] = time.monotonic,
-    ) -> "TaskAdmission":
+    ) -> TaskAdmission:
         return cls(AdmissionSettings.from_env(), clock=clock)
 
     @property
@@ -188,7 +200,10 @@ class TaskAdmission:
         with self._lock:
             for user_id, state in list(self._users.items()):
                 self._purge_request_times(state, current)
-                if state.active == 0 and current - state.last_seen >= self.settings.rate_history_ttl_seconds:
+                if (
+                    state.active == 0
+                    and current - state.last_seen >= self.settings.rate_history_ttl_seconds
+                ):
                     del self._users[user_id]
                     removed += 1
         return removed

@@ -1,15 +1,24 @@
 import unittest
+from unittest.mock import patch
 
-from agent.llm import _VALID_THINKING, _init_deepseek_model, model, pro_model
+from agent.llm import (
+    _VALID_THINKING,
+    DeepSeekSettings,
+    _init_deepseek_model,
+    create_model_bundle,
+)
 
 
 class DeepSeekThinkingConfigTests(unittest.TestCase):
-    def test_flash_disables_thinking(self):
-        self.assertEqual(model.extra_body, {"thinking": {"type": "disabled"}})
-
-    def test_pro_enables_thinking_with_high_effort(self):
+    @patch("agent.llm.init_chat_model")
+    def test_bundle_builds_models_only_when_requested(self, init_chat_model):
+        init_chat_model.side_effect = lambda **kwargs: kwargs
+        bundle = create_model_bundle(
+            DeepSeekSettings("key", "https://example.test", "flash", "pro")
+        )
+        self.assertEqual(bundle.flash["extra_body"], {"thinking": {"type": "disabled"}})
         self.assertEqual(
-            pro_model.extra_body,
+            bundle.pro["extra_body"],
             {"thinking": {"type": "enabled"}, "reasoning_effort": "high"},
         )
 
@@ -17,6 +26,8 @@ class DeepSeekThinkingConfigTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             _init_deepseek_model(
                 "deepseek-v4-pro",
+                api_key="key",
+                base_url="https://example.test",
                 thinking="high",
                 temperature=0.6,
             )

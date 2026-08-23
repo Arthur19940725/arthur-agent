@@ -1,11 +1,9 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
-from api.context import reset_session_context, set_session_context
+from api.workspace import SessionWorkspace, WorkspaceBoundaryError
 from tools.db_tools import validate_sql_query
-from utils.path_utils import resolve_path
 
 
 class ApprovalBoundaryTests(unittest.TestCase):
@@ -21,18 +19,21 @@ class ApprovalBoundaryTests(unittest.TestCase):
 
     def test_sql_validation_accepts_single_read_query(self):
         self.assertEqual(validate_sql_query("SELECT 1;"), "SELECT 1")
-        self.assertEqual(validate_sql_query("WITH x AS (SELECT 1) SELECT * FROM x"), "WITH x AS (SELECT 1) SELECT * FROM x")
+        self.assertEqual(
+            validate_sql_query("WITH x AS (SELECT 1) SELECT * FROM x"),
+            "WITH x AS (SELECT 1) SELECT * FROM x",
+        )
 
     def test_path_resolution_rejects_escape(self):
         with tempfile.TemporaryDirectory() as temp_dir:
-            session = Path(temp_dir) / "session"
-            session.mkdir()
+            workspace = SessionWorkspace(Path(temp_dir), "thread-1")
+            workspace.prepare()
             self.assertEqual(
-                Path(resolve_path("nested/report.md", str(session))),
-                session / "nested" / "report.md",
+                workspace.resolve_artifact("nested/report.md"),
+                workspace.output_dir / "nested" / "report.md",
             )
-            with self.assertRaises(ValueError):
-                resolve_path("../outside.txt", str(session))
+            with self.assertRaises(WorkspaceBoundaryError):
+                workspace.resolve_artifact("../outside.txt")
 
 
 if __name__ == "__main__":

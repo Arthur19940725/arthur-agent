@@ -4,6 +4,7 @@ import requests
 from langchain_core.tools import tool
 
 from api.monitor import monitor
+from tools.outcomes import ToolFailure, expose_failures
 
 TENCENT_QUOTE_URL = "https://qt.gtimg.cn/q={symbol}"
 TENCENT_HINT_URL = "https://smartbox.gtimg.cn/s3/"
@@ -52,22 +53,24 @@ def _fetch_tencent_quote(symbol: str) -> str:
     fields = text.split('"')[1].split("~")
     if len(fields) < 46 or not fields[1] or fields[3] in {"", "0.00"}:
         return ""
-    return "\n".join([
-        f"标的：{fields[1]} ({fields[2]})",
-        f"现价：{fields[3]}",
-        f"昨收：{fields[4]}",
-        f"开盘：{fields[5]}",
-        f"最高：{fields[33]}",
-        f"最低：{fields[34]}",
-        f"涨跌额：{fields[31]}",
-        f"涨跌幅：{fields[32]}%",
-        f"成交量(手)：{fields[36]}",
-        f"成交额(万)：{fields[37]}",
-        f"换手率：{fields[38]}%",
-        f"市盈率：{fields[39]}",
-        f"流通市值(亿)：{fields[44]}",
-        f"总市值(亿)：{fields[45]}",
-    ])
+    return "\n".join(
+        [
+            f"标的：{fields[1]} ({fields[2]})",
+            f"现价：{fields[3]}",
+            f"昨收：{fields[4]}",
+            f"开盘：{fields[5]}",
+            f"最高：{fields[33]}",
+            f"最低：{fields[34]}",
+            f"涨跌额：{fields[31]}",
+            f"涨跌幅：{fields[32]}%",
+            f"成交量(手)：{fields[36]}",
+            f"成交额(万)：{fields[37]}",
+            f"换手率：{fields[38]}%",
+            f"市盈率：{fields[39]}",
+            f"流通市值(亿)：{fields[44]}",
+            f"总市值(亿)：{fields[45]}",
+        ]
+    )
 
 
 def _fetch_yahoo_quote(symbol: str) -> str:
@@ -91,17 +94,19 @@ def _fetch_yahoo_quote(symbol: str) -> str:
     if prev:
         change = round(float(price) - float(prev), 4)
         change_pct = round(change / float(prev) * 100, 2)
-    return "\n".join([
-        f"标的：{meta.get('shortName') or symbol} ({meta.get('symbol') or symbol})",
-        f"现价：{price} {meta.get('currency', '')}".strip(),
-        f"昨收：{prev}",
-        f"涨跌额：{change}",
-        f"涨跌幅：{change_pct}%",
-        f"最高：{meta.get('regularMarketDayHigh')}",
-        f"最低：{meta.get('regularMarketDayLow')}",
-        f"成交量：{meta.get('regularMarketVolume')}",
-        f"交易所：{meta.get('exchangeName')}",
-    ])
+    return "\n".join(
+        [
+            f"标的：{meta.get('shortName') or symbol} ({meta.get('symbol') or symbol})",
+            f"现价：{price} {meta.get('currency', '')}".strip(),
+            f"昨收：{prev}",
+            f"涨跌额：{change}",
+            f"涨跌幅：{change_pct}%",
+            f"最高：{meta.get('regularMarketDayHigh')}",
+            f"最低：{meta.get('regularMarketDayLow')}",
+            f"成交量：{meta.get('regularMarketVolume')}",
+            f"交易所：{meta.get('exchangeName')}",
+        ]
+    )
 
 
 @tool
@@ -114,23 +119,29 @@ def get_stock_quote(symbol: str) -> str:
     query = (symbol or "").strip()
     monitor.report_tool(tool_name="股票行情工具", args={"symbol": query})
     if not query:
-        return "请提供股票代码或名称，例如 600519、贵州茅台、AAPL。"
+        raise ToolFailure("invalid_input", "请提供股票代码或名称", retryable=False)
 
-    errors = []
-    cn_symbol = _resolve_cn_symbol(query)
+    try:
+        cn_symbol = _resolve_cn_symbol(query)
+    except requests.Timeout:
+        cn_symbol = query
+    except requests.RequestException:
+        cn_symbol = query
     try:
         quote = _fetch_tencent_quote(cn_symbol)
         if quote:
             return quote
-    except Exception as exc:
-        errors.append(f"A股行情查询失败：{exc}")
+    except requests.RequestException:
+        pass
 
     try:
         quote = _fetch_yahoo_quote(query.upper())
         if quote:
             return quote
-    except Exception as exc:
-        errors.append(f"海外行情查询失败：{exc}")
+    except requests.RequestException:
+        pass
 
-    detail = "；".join(errors) if errors else "未匹配到有效标的"
-    return f"未找到股票行情：{query}。{detail}"
+    raise ToolFailure("not_found", "未找到有效股票行情", retryable=False)
+
+
+get_stock_quote = expose_failures(get_stock_quote)

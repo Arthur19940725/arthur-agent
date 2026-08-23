@@ -11,10 +11,14 @@ class ApprovalState(TypedDict):
 
 
 def approval_node(state: ApprovalState):
-    decision = interrupt({
-        "action_requests": [{"name": "sensitive", "args": {}}],
-        "review_configs": [{"action_name": "sensitive", "allowed_decisions": ["approve", "reject"]}],
-    })
+    decision = interrupt(
+        {
+            "action_requests": [{"name": "sensitive", "args": {}}],
+            "review_configs": [
+                {"action_name": "sensitive", "allowed_decisions": ["approve", "reject"]}
+            ],
+        }
+    )
     return {"executed": state["executed"] + (decision["type"] == "approve")}
 
 

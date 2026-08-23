@@ -1,12 +1,10 @@
 import logging
-import os
 from pathlib import Path
-import time
 
 try:
     import markdown
-    import win32com.client
     import pythoncom
+    import win32com.client
 except ImportError:
     pass
 
@@ -16,15 +14,15 @@ def convert_md_to_pdf_via_word(md_abs_path: Path, pdf_abs_path: Path) -> str:
     使用 Microsoft Word COM 接口将 Markdown 转换为 PDF。
     依赖：pywin32, markdown
     """
-    temp_html_path = md_abs_path.with_suffix('.temp.html')
+    temp_html_path = md_abs_path.with_suffix(".temp.html")
     word_app = None
 
     try:
         # 1. MD 转 HTML
-        with open(md_abs_path, 'r', encoding='utf-8') as f:
+        with open(md_abs_path, encoding="utf-8") as f:
             md_content = f.read()
 
-        html_body = markdown.markdown(md_content, extensions=['tables', 'fenced_code'])
+        html_body = markdown.markdown(md_content, extensions=["tables", "fenced_code"])
         html_content = f"""
         <html>
         <head>
@@ -43,12 +41,12 @@ def convert_md_to_pdf_via_word(md_abs_path: Path, pdf_abs_path: Path) -> str:
         </html>
         """
 
-        with open(temp_html_path, 'w', encoding='utf-8') as f:
+        with open(temp_html_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         # 2. 调用 Word COM
         pythoncom.CoInitialize()
-        word_app = win32com.client.Dispatch('Word.Application')
+        word_app = win32com.client.Dispatch("Word.Application")
         word_app.Visible = False
         word_app.DisplayAlerts = False
 
@@ -72,16 +70,16 @@ def convert_md_to_pdf_via_word(md_abs_path: Path, pdf_abs_path: Path) -> str:
         if word_app:
             try:
                 word_app.Quit()
-            except:
+            except Exception:
                 pass
 
         if temp_html_path.exists():
             try:
                 temp_html_path.unlink()
-            except:
+            except Exception:
                 pass
 
         try:
             pythoncom.CoUninitialize()
-        except:
+        except Exception:
             pass

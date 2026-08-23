@@ -5,7 +5,6 @@ from pathlib import Path
 
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-
 project_root_path = Path(__file__).parents[1].resolve()
 default_checkpoint_db_path = project_root_path / "data" / "checkpoints.sqlite"
 

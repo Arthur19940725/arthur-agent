@@ -6,6 +6,7 @@ from langchain_core.tools import tool
 from mysql.connector import Error, connect
 
 from api.monitor import monitor
+from tools.outcomes import ToolFailure, expose_failures
 
 load_dotenv()
 
@@ -41,15 +42,19 @@ def list_sql_tables() -> str:
                 if not tables:
                     return "没有可用的表"
                 return f"可用的表有：{', '.join(table[0] for table in tables)}"
-    except Error as exc:
-        return f"查询出现异常：{exc}"
+    except ValueError:
+        raise ToolFailure(
+            "configuration_missing", "数据库连接配置不完整", retryable=False
+        ) from None
+    except Error:
+        raise ToolFailure("upstream_failure", "数据库查询失败", retryable=True) from None
 
 
 @tool
 def get_table_data(table_name: str) -> str:
     """读取指定表的前 100 行用于结构预览。"""
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", table_name or ""):
-        raise ValueError("Invalid table name")
+        raise ToolFailure("invalid_input", "数据表名称格式无效", retryable=False)
     monitor.report_tool("数据库表数据查询工具：get_table_data", {"table_name": table_name})
     try:
         with connect(**get_db_config()) as conn:
@@ -60,11 +65,13 @@ def get_table_data(table_name: str) -> str:
                     return f"数据表：{table_name}为空没有数据！"
                 columns = [desc[0] for desc in description]
                 rows = cursor.fetchmany(100)
-                return ",".join(columns) + "\n" + "\n".join(
-                    ",".join(map(str, row)) for row in rows
-                )
-    except Error as exc:
-        return f"查询出现异常：{exc}"
+                return ",".join(columns) + "\n" + "\n".join(",".join(map(str, row)) for row in rows)
+    except ValueError:
+        raise ToolFailure(
+            "configuration_missing", "数据库连接配置不完整", retryable=False
+        ) from None
+    except Error:
+        raise ToolFailure("upstream_failure", "数据库查询失败", retryable=True) from None
 
 
 def validate_sql_query(query: str) -> str:
@@ -88,7 +95,12 @@ def validate_sql_query(query: str) -> str:
 @tool
 def execute_sql_query(query: str) -> str:
     """执行经过校验的只读自定义 SQL 查询。"""
-    query = validate_sql_query(query)
+    try:
+        query = validate_sql_query(query)
+    except ValueError:
+        raise ToolFailure(
+            "invalid_input", "SQL 仅允许单条 SELECT 或 WITH 查询", retryable=False
+        ) from None
     monitor.report_tool("数据库表数据查询工具：execute_sql_query", {"query": query})
     try:
         with connect(**get_db_config()) as conn:
@@ -99,8 +111,15 @@ def execute_sql_query(query: str) -> str:
                     return "执行自定义 SQL 查询没有返回结果。"
                 columns = [desc[0] for desc in description]
                 rows = cursor.fetchmany(100)
-                return ",".join(columns) + "\n" + "\n".join(
-                    ",".join(map(str, row)) for row in rows
-                )
-    except Error as exc:
-        return f"查询出现异常：{exc}"
+                return ",".join(columns) + "\n" + "\n".join(",".join(map(str, row)) for row in rows)
+    except ValueError:
+        raise ToolFailure(
+            "configuration_missing", "数据库连接配置不完整", retryable=False
+        ) from None
+    except Error:
+        raise ToolFailure("upstream_failure", "数据库查询失败", retryable=True) from None
+
+
+list_sql_tables = expose_failures(list_sql_tables)
+get_table_data = expose_failures(get_table_data)
+execute_sql_query = expose_failures(execute_sql_query)

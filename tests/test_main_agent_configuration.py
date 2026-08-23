@@ -1,17 +1,25 @@
 import unittest
 from unittest.mock import patch
 
-from agent.llm import model, pro_model
+from agent.llm import ModelBundle
 from agent.main_agent import create_main_agent
 
 
 class MainAgentConfigurationTests(unittest.TestCase):
     @patch("agent.main_agent.create_deep_agent")
     def test_main_agent_uses_pro_and_collapses_single_tool_experts(self, create_deep_agent):
-        create_main_agent(checkpointer=object())
+        flash = object()
+        pro = object()
+        create_main_agent(
+            checkpointer=object(),
+            models=ModelBundle(flash=flash, pro=pro),
+            search_client=object(),
+            ragflow_client=object(),
+            database_enabled=True,
+        )
 
         kwargs = create_deep_agent.call_args.kwargs
-        self.assertIs(kwargs["model"], pro_model)
+        self.assertIs(kwargs["model"], pro)
 
         subagents = kwargs["subagents"]
         self.assertEqual(
@@ -20,7 +28,7 @@ class MainAgentConfigurationTests(unittest.TestCase):
         )
         for subagent in subagents:
             self.assertNotIn("middleware", subagent)
-            self.assertIs(subagent["model"], model)
+            self.assertIs(subagent["model"], flash)
 
         tool_names = [tool.name for tool in kwargs["tools"]]
         self.assertEqual(

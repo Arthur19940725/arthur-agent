@@ -1,9 +1,9 @@
-import asyncio
 import os
+import tempfile
 import time
 import unittest
 import uuid
-from contextlib import asynccontextmanager
+from pathlib import Path
 from unittest.mock import patch
 
 import jwt
@@ -12,7 +12,8 @@ from pwdlib import PasswordHash
 from starlette.websockets import WebSocketDisconnect
 
 from api.auth import ALGORITHM, AuthSettings, issue_access_token
-
+from api.workspace import SessionWorkspace
+from tests.runtime_support import make_test_lifespan
 
 PASSWORD = "route-test-password"
 PASSWORD_HASH = PasswordHash.recommended().hash(PASSWORD)
@@ -38,25 +39,8 @@ class ApiAuthenticationTests(unittest.TestCase):
 
         cls.server = server
 
-        @asynccontextmanager
-        async def test_lifespan(app):
-            from api.admission import TaskAdmission
-
-            app.state.background_tasks = set()
-            app.state.main_agent = object()
-            app.state.thread_locks = {}
-            app.state.thread_owners = {}
-            app.state.consumed_approvals = set()
-            app.state.admission = TaskAdmission.from_env()
-
-            async def agent_runner(main_agent, query, thread_id):
-                await asyncio.sleep(0)
-
-            app.state.agent_runner = agent_runner
-            yield
-
         cls.original_lifespan = server.app.router.lifespan_context
-        server.app.router.lifespan_context = test_lifespan
+        server.app.router.lifespan_context = make_test_lifespan()
 
     @classmethod
     def tearDownClass(cls):
@@ -65,16 +49,11 @@ class ApiAuthenticationTests(unittest.TestCase):
 
     def setUp(self):
         self.thread_id = str(uuid.uuid4())
-        self.server.manager.active_connections.clear()
-        self.server.manager.event_history.clear()
-        self.server.manager.task_status.clear()
         self.client_context = TestClient(self.server.app)
         self.client = self.client_context.__enter__()
 
     def tearDown(self):
         self.client_context.__exit__(None, None, None)
-        self.server.app.state.thread_owners.clear()
-        self.server.app.state.thread_locks.clear()
 
     def login(self):
         response = self.client.post(
@@ -99,14 +78,13 @@ class ApiAuthenticationTests(unittest.TestCase):
             ("get", "/api/task/thread-1", {}),
             (
                 "post",
-                "/api/upload",
+                "/api/task/thread-1/files",
                 {
-                    "data": {"thread_id": "thread-1"},
                     "files": {"files": ("note.txt", b"hello")},
                 },
             ),
-            ("get", "/api/files", {"params": {"path": "."}}),
-            ("get", "/api/download", {"params": {"path": "missing"}}),
+            ("get", "/api/task/thread-1/files", {}),
+            ("get", "/api/task/thread-1/files/missing", {}),
         ]
 
         for method, url, kwargs in requests:
@@ -140,10 +118,38 @@ class ApiAuthenticationTests(unittest.TestCase):
             },
         )
 
+    def test_file_routes_expose_thread_relative_paths_only(self):
+        token = self.login()
+        self.server.app.state.runtime.tasks.claim(self.thread_id, "demo-user")
+        headers = {"Authorization": f"Bearer {token}"}
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch.object(self.server, "project_root", Path(temp_dir)):
+                workspace = SessionWorkspace(Path(temp_dir), self.thread_id)
+                workspace.prepare()
+                artifact = workspace.resolve_artifact("reports/result.txt")
+                artifact.parent.mkdir()
+                artifact.write_text("hello", encoding="utf-8")
+
+                listing = self.client.get(
+                    f"/api/task/{self.thread_id}/files",
+                    headers=headers,
+                )
+                download = self.client.get(
+                    f"/api/task/{self.thread_id}/files/reports/result.txt",
+                    headers=headers,
+                )
+
+        self.assertEqual(listing.status_code, 200)
+        self.assertEqual(listing.json()["files"][0]["path"], "reports/result.txt")
+        self.assertNotIn(temp_dir, str(listing.json()))
+        self.assertEqual(download.status_code, 200)
+        self.assertEqual(download.content, b"hello")
+
     def test_websocket_rejects_invalid_token_before_registration(self):
-        self.server.manager.event_history["thread-1"] = [
-            {"type": "monitor_event", "message": "secret history"}
-        ]
+        self.server.app.state.runtime.tasks.claim("thread-1", "demo-user")
+        self.server.app.state.runtime.tasks.store.append_event(
+            "thread-1", {"type": "monitor_event", "message": "secret history"}
+        )
 
         with self.client.websocket_connect("/ws/thread-1") as websocket:
             websocket.send_json({"type": "auth", "token": "not-a-token"})
@@ -182,13 +188,13 @@ class ApiAuthenticationTests(unittest.TestCase):
         settings = AuthSettings.from_env()
         token = issue_access_token("demo-user", settings)
         history = {"type": "monitor_event", "message": "history"}
-        self.server.app.state.thread_owners[self.thread_id] = "demo-user"
-        self.server.manager.event_history[self.thread_id] = [history]
+        self.server.app.state.runtime.tasks.claim(self.thread_id, "demo-user")
+        stored = self.server.app.state.runtime.tasks.store.append_event(self.thread_id, history)
 
         with self.client.websocket_connect(f"/ws/{self.thread_id}") as websocket:
             websocket.send_json({"type": "auth", "token": token})
             self.assertEqual(websocket.receive_json(), {"type": "auth_ok"})
-            self.assertEqual(websocket.receive_json(), history)
+            self.assertEqual(websocket.receive_json(), stored)
             websocket.send_text("ping")
             self.assertEqual(websocket.receive_json()["type"], "pong")
 
