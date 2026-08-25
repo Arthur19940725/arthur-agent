@@ -53,9 +53,13 @@ class MainAgentConfigurationTests(unittest.TestCase):
         self.assertIn("get_weather", kwargs["system_prompt"])
         self.assertIn("「茅台现在多少钱」", kwargs["system_prompt"])
         self.assertIn("「杭州今天天气」", kwargs["system_prompt"])
+        self.assertIn("把刚才的 Markdown 转成 PDF", kwargs["system_prompt"])
+        self.assertIn("预览行不是最终答案", kwargs["system_prompt"])
+        self.assertIn("description` 必须自包含", kwargs["system_prompt"])
         for subagent in subagents:
             self.assertIn("使用时机：", subagent["description"])
             self.assertIn("不要用于：", subagent["description"])
+            self.assertIn("看不到主编排的完整对话", subagent["system_prompt"])
 
 
 if __name__ == "__main__":
